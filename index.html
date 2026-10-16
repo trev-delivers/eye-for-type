@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eye for Type</title>
+<meta name="description" content="Learn to see typography: hands-on lessons in kerning, leading, measure, word spacing and rag. Learn the rule, then practise it and get scored.">
+<meta property="og:title" content="Eye for Type">
+<meta property="og:description" content="Hands-on lessons in seeing typography. Learn the rule, then practise it and get scored.">
+<meta name="theme-color" content="#ece8df">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><strong>Eye for Type</strong><span>learn to see typography</span></div>
+  <div class="mode" role="group" aria-label="Mode">
+    <button id="learnMode" type="button" aria-pressed="true">Learn</button>
+    <button id="testMode" type="button" aria-pressed="false">Practise</button>
+  </div>
+  <label class="lesson-picker-wrap"><span class="sr-only">Lesson</span><select class="lesson-picker" id="lessonPicker"></select></label>
+  <div class="progress-wrap"><span id="progressText"></span><div class="progress" aria-hidden="true"><div id="progressBar"></div></div></div>
+</header>
+<main>
+  <nav class="sidebar" aria-label="Lessons">
+    <div class="kicker">Curriculum</div>
+    <ol id="lessonList" class="lesson-list"></ol>
+    <p class="sidebar-note">Learn is for reading, examples and guidance. Practise takes the guidance away and asks you to make the typographic decisions yourself.</p>
+  </nav>
+
+  <section class="center">
+    <div class="stage">
+      <div class="stage-head">
+        <div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><p class="desc" id="desc"></p></div>
+        <div class="pill" id="pill"></div>
+      </div>
+
+      <div class="work" id="work">
+        <div id="readingWork" class="reading hidden">
+          <div class="reading-lead" id="readingLead"></div>
+          <div class="reading-examples" id="readingExamples"></div>
+          <div id="riverDemo" class="para-card river-demo hidden">
+            <div class="demo-head">
+              <div class="sample-title">Watch the rain find the rivers</div>
+              <div class="seg" role="group" aria-label="Spacing">
+                <button type="button" data-demo="wide" aria-pressed="true">Wide spacing</button>
+                <button type="button" data-demo="even" aria-pressed="false">Even spacing</button>
+              </div>
+            </div>
+            <p class="sample" id="riverSample"></p>
+            <p class="demo-note" id="riverNote" aria-live="polite"></p>
+          </div>
+          <p class="reading-foot"><b>Then practise it.</b> Switch to Practise when you want the guidance taken away and the exercise scored.</p>
+        </div>
+
+        <div id="kernWork" class="kern hidden">
+          <svg id="kernSvg" class="kern-svg" viewBox="0 0 900 260" aria-label="Kerning exercise">
+            <defs><filter id="squint" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter></defs>
+            <g id="kernFlip">
+              <text id="solutionText" class="solution-text" x="450" y="175" text-anchor="middle" aria-hidden="true"></text>
+              <g id="markers" aria-hidden="true"></g>
+              <g id="editableGlyphs"></g>
+            </g>
+          </svg>
+          <p class="helper" id="helper">Drag a letter left or right, or tab to it and use the arrow keys (Shift for bigger steps). Dots mark the letters you can move.</p>
+        </div>
+
+        <div id="paraWork" class="para hidden">
+          <div class="para-card" id="paraCard">
+            <div class="sample-title" id="paraTitle"></div>
+            <p class="sample" id="paraSample"></p>
+            <div class="measure-note"><span id="paraNoteA"></span><span id="paraNoteB"></span></div>
+          </div>
+        </div>
+
+        <div id="ragWork" class="rag hidden">
+          <div class="para-card rag-card">
+            <div class="sample-title">Edit the paragraph until the rag feels intentional</div>
+            <div class="rag-layout">
+              <div class="rag-main">
+                <div id="ragEditor" class="rag-editor" contenteditable="plaintext-only" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Paragraph to edit"></div>
+                <div class="rag-meta"><span id="ragWords"></span><span id="ragLines"></span><span id="ragIssue"></span></div>
+              </div>
+              <div class="rag-viz-wrap" aria-hidden="true">
+                <div class="rag-viz-title">Rag shape</div>
+                <div id="ragViz" class="rag-viz"></div>
+              </div>
+            </div>
+            <p class="rag-coach" id="ragCoach" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div id="scoreWork" class="score-card hidden">
+          <div class="big" id="finalScore">0</div>
+          <p id="finalCopy"></p>
+          <ol class="final-list" id="finalList"></ol>
+          <button class="btn primary hidden" id="startPractise" type="button">Start practising</button>
+        </div>
+      </div>
+
+      <div class="controls" id="controls">
+        <div class="range hidden" id="rangeWrap">
+          <label for="slider"><span id="controlLabel"></span><span id="controlValue"></span></label>
+          <div class="range-track"><div class="band hidden" id="band"></div><input id="slider" type="range"></div>
+        </div>
+        <div class="actions">
+          <button class="btn hidden" id="blurBtn" type="button" aria-pressed="false">Blur</button>
+          <button class="btn hidden" id="flipBtn" type="button" aria-pressed="false">Flip</button>
+          <button class="btn hidden" id="resetBtn" type="button">Reset</button>
+          <button class="btn primary hidden" id="checkBtn" type="button">See my score</button>
+          <button class="btn accent hidden" id="nextBtn" type="button">Next lesson</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="right" aria-label="Guidance and results">
+    <div id="learnPanel">
+      <div class="guide-card">
+        <h2>What matters</h2>
+        <p id="whatMatters"></p>
+        <p class="aside-note">These are optical rules of thumb, not laws. Different typefaces, sizes and contexts need different decisions.</p>
+      </div>
+      <div class="guide-card"><h2>Where to look</h2><ol class="tips" id="tips"></ol></div>
+      <div class="guide-card"><h2>Why designers care</h2><p id="whyCare"></p></div>
+    </div>
+    <div id="testPanel" class="hidden">
+      <div class="test-banner">No hints while you work. Make your call, then see your score: the result shows the answer and explains it.</div>
+    </div>
+    <div id="feedback" class="feedback hidden" aria-live="polite" tabindex="-1"></div>
+  </aside>
+</main>
+</div>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
