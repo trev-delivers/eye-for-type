@@ -7,17 +7,20 @@
 <meta name="description" content="Learn to see typography: hands-on lessons in kerning, leading, measure, word spacing and rag. Learn the rule, then practise it and get scored.">
 <meta property="og:title" content="Eye for Type">
 <meta property="og:description" content="Hands-on lessons in seeing typography. Learn the rule, then practise it and get scored.">
-<meta name="theme-color" content="#ece8df">
+<meta name="theme-color" content="#E8E9E5">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/ds/css/primitives.css">
+<link rel="stylesheet" href="/ds/css/themes/specimen.css">
+<link rel="stylesheet" href="/ds/css/base.css">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="app">
 <header>
-  <div class="brand"><strong>Eye for Type</strong><span>learn to see typography</span></div>
+  <div class="brand"><strong>Eye for Type</strong><span>Learn to see typography</span></div>
   <div class="mode" role="group" aria-label="Mode">
     <button id="learnMode" type="button" aria-pressed="true">Learn</button>
     <button id="testMode" type="button" aria-pressed="false">Practise</button>
@@ -27,7 +30,6 @@
 </header>
 <main>
   <nav class="sidebar" aria-label="Lessons">
-    <div class="kicker">Curriculum</div>
     <ol id="lessonList" class="lesson-list"></ol>
     <p class="sidebar-note">Learn is for reading, examples and guidance. Practise takes the guidance away and asks you to make the typographic decisions yourself.</p>
   </nav>
@@ -35,8 +37,9 @@
   <section class="center">
     <div class="stage">
       <div class="stage-head">
-        <div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><p class="desc" id="desc"></p></div>
-        <div class="pill" id="pill"></div>
+        <h1 id="title"></h1>
+        <p class="desc" id="desc"></p>
+        <p class="lesson-meta label" id="lessonMeta"></p>
       </div>
 
       <div class="work" id="work">
@@ -73,7 +76,7 @@
           <div class="para-card" id="paraCard">
             <div class="sample-title" id="paraTitle"></div>
             <p class="sample" id="paraSample"></p>
-            <div class="measure-note"><span id="paraNoteA"></span><span id="paraNoteB"></span></div>
+            <div class="measure-note label"><span id="paraNoteA"></span><span id="paraNoteB"></span></div>
           </div>
         </div>
 
@@ -86,7 +89,7 @@
                 <div class="rag-meta"><span id="ragWords"></span><span id="ragLines"></span><span id="ragIssue"></span></div>
               </div>
               <div class="rag-viz-wrap" aria-hidden="true">
-                <div class="rag-viz-title">Rag shape</div>
+                <div class="rag-viz-title label">Rag shape</div>
                 <div id="ragViz" class="rag-viz"></div>
               </div>
             </div>
@@ -104,7 +107,7 @@
 
       <div class="controls" id="controls">
         <div class="range hidden" id="rangeWrap">
-          <label for="slider"><span id="controlLabel"></span><span id="controlValue"></span></label>
+          <label class="label" for="slider"><span id="controlLabel"></span><span id="controlValue"></span></label>
           <div class="range-track"><div class="band hidden" id="band"></div><input id="slider" type="range"></div>
         </div>
         <div class="actions">

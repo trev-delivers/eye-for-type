@@ -1,0 +1,4 @@
+{
+  "ignore": [],
+  "note": "The one literal left is index.html's theme-color, #E8E9E5, which is --ds-color-bg copied by hand because a meta tag can't read a custom property. The rivers canvas in js/rivers.js reads --ds-color-accent-alt off the page when it paints and fades with globalAlpha, so it has no literals of its own."
+}

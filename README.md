@@ -14,6 +14,8 @@ Text is sized so the measure in characters is the same on every screen, so every
 
 A static site with no build step: `index.html`, `styles.css` and the modules in `js/`. Deployed on Vercel.
 
+Colours, type and timing come from the Specimen theme in obvious, vendored into `ds/`. Refresh it with `node scripts/sync-ds.mjs` (or `DS_LOCAL=../obvious node scripts/sync-ds.mjs` against a checkout).
+
 ```sh
 python3 -m http.server 4180      # serve locally
 npm test                          # scoring unit tests

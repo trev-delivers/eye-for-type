@@ -75,8 +75,8 @@ document.querySelectorAll('[data-demo]').forEach((b) => b.addEventListener('clic
 
 // ---- static chrome ------------------------------------------------------
 $('lessonList').innerHTML = lessons.map((l, i) =>
-  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden" aria-label="scored"></span>${String(i + 1).padStart(2, '0')}</small></button></li>`).join('');
-$('lessonPicker').innerHTML = lessons.map((l, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} · ${l.title}</option>`).join('');
+  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden" aria-label="scored"></span>${i + 1}</small></button></li>`).join('');
+$('lessonPicker').innerHTML = lessons.map((l, i) => `<option value="${i}">${i + 1}. ${l.title}</option>`).join('');
 
 // ---- render -------------------------------------------------------------
 const show = (id, on) => $(id).classList.toggle('hidden', !on);
@@ -92,7 +92,7 @@ function chrome() {
   });
   $('lessonPicker').value = String(i);
   const done = Object.keys(state.scores).length;
-  $('progressText').textContent = `${done} / ${LAST} scored`;
+  $('progressText').textContent = `${done} of ${LAST} scored`;
   $('progressBar').style.width = (done / LAST) * 100 + '%';
   $('learnMode').setAttribute('aria-pressed', String(!practise));
   $('testMode').setAttribute('aria-pressed', String(practise));
@@ -103,10 +103,10 @@ function render() {
   kern.stop(); rivers.stop(); demo.stop();
   chrome();
 
-  $('eyebrow').textContent = `Lesson ${String(i + 1).padStart(2, '0')} · ${typeLabel[l.type]}`;
   $('title').textContent = l.title;
   $('desc').textContent = l.desc;
-  $('pill').textContent = l.type === 'score' ? 'results' : practise ? 'practise' : 'learn';
+  $('lessonMeta').textContent = l.type === 'score' ? '' : `${typeLabel[l.type]} lesson ${i + 1} of ${LAST}`;
+  show('lessonMeta', l.type !== 'score');
 
   ['readingWork', 'kernWork', 'paraWork', 'ragWork', 'scoreWork', 'rangeWrap', 'band', 'blurBtn', 'flipBtn', 'resetBtn', 'checkBtn', 'nextBtn', 'feedback'].forEach((id) => show(id, false));
   ['blurBtn', 'flipBtn'].forEach((id) => $(id).setAttribute('aria-pressed', 'false'));
