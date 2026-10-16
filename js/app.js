@@ -254,7 +254,11 @@ function showResult(r, fresh) {
       rivers.refresh();
       const n = rivers.count;
       html += `<p>${inBand ? 'Even texture.' : v > hi ? 'Too open: gaps are starting to line up into rivers.' : 'Too tight: words are starting to run together.'} You chose ${fmtSpace(v)}.</p>`;
-      html += `<p>${n ? `Your setting makes <b>${n} river${n === 1 ? '' : 's'}</b>. Watch the rain run down through ${n === 1 ? 'it' : 'them'}.` : v > hi ? 'No full rivers yet, but the gaps are wide enough that one could open with a different line break.' : 'No rivers: the rain lands on words instead of running down the page.'}</p>`;
+      const riverLine = v <= hi
+        ? 'No rivers: the gaps are too narrow to line up into channels, so the rain lands on words.'
+        : n ? `Your setting makes <b>${n} river${n === 1 ? '' : 's'}</b>. Watch the rain run down through ${n === 1 ? 'it' : 'them'}.`
+          : 'No full rivers yet, but the gaps are wide enough that one could open with a different line break.';
+      html += `<p>${riverLine}</p>`;
       html += `<div class="fb-actions"><button type="button" id="rainBtn" aria-pressed="true">Rain</button></div>`;
       html += `<p class="why">Anything from <b>${fmtSpace(lo)} to ${fmtSpace(hi)}</b> keeps an even grey. The typeface’s own spacing is usually close to right.</p>`;
     }

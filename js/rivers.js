@@ -46,7 +46,7 @@ export function readGaps(textEl, host) {
 // Chains of gaps that overlap on consecutive lines. A chain three or more
 // lines deep is a river.
 // minWidth: a channel of normal word spaces is barely visible; rivers that
-// matter are made of gaps wider than about a third of the type size.
+// matter are made of gaps clearly wider than a normal space.
 export function findRivers(lines, share = 0.5, minWidth = 0) {
   const joins = (a, h) => Math.min(a.x2, h.x2) - Math.max(a.x1, h.x1) >= share * Math.min(a.x2 - a.x1, h.x2 - h.x1);
   const rivers = [];
@@ -88,7 +88,8 @@ export function createRivers(textEl, host, { onCount } = {}) {
   }
   function read() {
     lines = readGaps(textEl, host);
-    rivers = findRivers(lines, 0.5, parseFloat(getComputedStyle(textEl).fontSize) * 0.33);
+    // a normal word space plus sidebearings is about 0.35em; rivers need clearly wider gaps
+    rivers = findRivers(lines, 0.5, parseFloat(getComputedStyle(textEl).fontSize) * 0.45);
     if (onCount) onCount(rivers.length);
   }
 
