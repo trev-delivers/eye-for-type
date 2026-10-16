@@ -1,0 +1,6 @@
+tests/
+README.md
+package.json
+package-lock.json
+scripts/
+.ds-audit.json

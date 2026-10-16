@@ -137,7 +137,7 @@ await t('12: the rag starts with a problem and breaks the same at every width', 
     shapes.push(await p.evaluate(() => document.querySelectorAll('.rag-bar').length + ':' + document.getElementById('ragIssue').textContent));
   }
   assert.ok(shapes.every((s) => s === shapes[0]), shapes.join(' / '));
-  assert.ok(!shapes[0].endsWith('balanced rag'), shapes[0]);
+  assert.ok(!shapes[0].endsWith('Balanced rag'), shapes[0]);
 });
 
 await t('12b: nonsense text is not a pass', async () => {

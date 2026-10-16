@@ -4,7 +4,9 @@
 // don't, the particles land on the words and fade. With reduced motion,
 // the detected rivers are drawn as still lines instead.
 
-const BLUE = '29,111,208';
+// Rivers are drawn in the answer colour. Canvas can't take a var(), so read
+// the resolved token off the page each time we paint and fade with globalAlpha.
+const answerColour = () => getComputedStyle(document.documentElement).getPropertyValue('--ds-color-accent-alt').trim() || 'blue';
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Word gaps on each rendered line, in px relative to `host`.
@@ -76,7 +78,7 @@ export function createRivers(textEl, host, { onCount } = {}) {
   canvas.setAttribute('aria-hidden', 'true');
   host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  let lines = [], rivers = [], parts = [], raf = 0, running = false, w = 0, h = 0, last = 0;
+  let lines = [], rivers = [], parts = [], raf = 0, running = false, w = 0, h = 0, last = 0, colour = answerColour();
 
   function measure() {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -144,7 +146,8 @@ export function createRivers(textEl, host, { onCount } = {}) {
 
   // Tint the white channel itself: each river's gaps, joined line to line.
   function channels(alpha) {
-    ctx.fillStyle = `rgba(${BLUE},${alpha})`;
+    ctx.fillStyle = colour;
+    ctx.globalAlpha = alpha;
     for (const r of rivers) {
       const left = [], right = [];
       r.forEach(({ line, gap }) => {
@@ -160,22 +163,25 @@ export function createRivers(textEl, host, { onCount } = {}) {
 
   function draw() {
     ctx.clearRect(0, 0, w, h);
+    colour = answerColour();
     channels(0.16);
     for (const p of parts) {
       const a = p.dead ? Math.max(0, 1 - p.dead / 8) * 0.25 : 0.3 + Math.min(0.65, (p.through - 1) * 0.22);
       if (p.trail.length > 1 && p.through >= 2) {
-        ctx.strokeStyle = `rgba(${BLUE},${(a * 0.45).toFixed(3)})`;
+        ctx.strokeStyle = colour;
+        ctx.globalAlpha = a * 0.45;
         ctx.lineWidth = 1.4;
         ctx.beginPath();
         p.trail.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
         ctx.stroke();
       }
-      ctx.fillStyle = `rgba(${BLUE},${a.toFixed(3)})`;
+      ctx.fillStyle = colour;
+      ctx.globalAlpha = a;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.dead ? 1.1 : 1.6, 0, Math.PI * 2); ctx.fill();
     }
   }
 
-  function drawStill() { ctx.clearRect(0, 0, w, h); channels(0.32); }
+  function drawStill() { ctx.clearRect(0, 0, w, h); colour = answerColour(); channels(0.32); ctx.globalAlpha = 1; }
 
   function loop(t) {
     if (!running) return;

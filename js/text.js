@@ -42,7 +42,7 @@ export function createPara(els) {
     sample.style.lineHeight = ''; sample.style.wordSpacing = ''; sample.style.maxWidth = '';
     const f = fit();
     if (l.type === 'leading') { sample.style.maxWidth = l.measure + 'ch'; noteA.textContent = l.measure + ' characters a line'; }
-    if (l.type === 'wordspacing') { sample.style.maxWidth = '34ch'; sample.style.lineHeight = '1.45'; noteA.textContent = 'body copy, 34 characters a line'; }
+    if (l.type === 'wordspacing') { sample.style.maxWidth = '34ch'; sample.style.lineHeight = '1.45'; noteA.textContent = 'Body copy, 34 characters a line'; }
     if (l.type === 'measure') { sample.style.lineHeight = String(l.leading); }
     apply(value);
     return f;
@@ -55,7 +55,7 @@ export function createPara(els) {
     if (lesson.type === 'measure') {
       sample.style.maxWidth = Math.round(v) + 'ch';
       noteA.textContent = Math.round(v) + ' characters a line';
-      noteB.textContent = size < 14 ? 'text shrunk to fit your screen' : '';
+      noteB.textContent = size < 14 ? 'Text shrunk to fit your screen' : '';
     }
   }
 
@@ -171,7 +171,7 @@ export function createRag(els, { onChange }) {
     flat: 'The lines are almost the same length, which looks like accidental justification. A little variation is fine.',
     balanced: 'This reads as a calm, natural rag. Don’t over-correct it into a staircase.',
   };
-  const LABEL = { short: 'needs more text', rewritten: 'too rewritten', runt: 'very weak last line', 'short-last': 'short last line', jagged: 'jagged edge', notch: 'notch in the edge', wedge: 'sloping edge', flat: 'too regular', balanced: 'balanced rag' };
+  const LABEL = { short: 'Needs more text', rewritten: 'Too rewritten', runt: 'Very weak last line', 'short-last': 'Short last line', jagged: 'Jagged edge', notch: 'Notch in the edge', wedge: 'Sloping edge', flat: 'Too regular', balanced: 'Balanced rag' };
 
   function analyse() {
     if (!lesson) return last;
