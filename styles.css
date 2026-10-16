@@ -83,6 +83,17 @@ h1{font-size:38px;line-height:1;letter-spacing:-.052em;margin:0}
 /* paragraphs */
 .para-card{width:min(700px,100%);margin:0 auto;background:#fff;border:1px solid rgba(17,17,15,.08);border-radius:16px;padding:36px 40px;box-shadow:0 12px 42px rgba(30,25,20,.055)}
 .para-card.wide{width:min(860px,100%)}
+.para-card{position:relative}
+.rivers{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s ease}
+.rivers.on{opacity:1}
+.river-demo{margin-top:26px;box-shadow:none}
+.demo-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.demo-head .sample-title{margin:0}
+.river-demo .sample{max-width:40ch;font-size:19px}
+.demo-note{margin:16px 0 0;font-size:11px;line-height:1.55;color:var(--muted)}
+.seg{display:flex;padding:3px;border:1px solid var(--hair);border-radius:999px;background:#faf8f3}
+.seg button{border:0;background:transparent;border-radius:999px;padding:6px 10px;font-size:10px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
 .sample-title{font-size:12px;font-weight:700;margin-bottom:14px}
 .sample{font-family:var(--serif);font-optical-sizing:auto;font-size:20px;line-height:1.3;color:#23221e;margin:0;transition:line-height .12s ease,max-width .2s ease,word-spacing .12s ease}
 .measure-note{margin-top:20px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.11em}

@@ -219,6 +219,40 @@ await t('feature: leading is scored against a range, shown on the slider', async
   assert.ok(await p.isVisible('#band'));
 });
 
+for (const width of [1440, 390]) {
+  await t(`rivers: the Learn demo finds rivers when wide and none when even at ${width}px`, async () => {
+    const p = await page({ width });
+    await go(p, 8); await p.waitForTimeout(800);
+    assert.match(await p.textContent('#riverNote'), /^\d+ rivers?:/);
+    assert.ok(await p.evaluate(() => document.querySelector('#riverDemo .rivers').classList.contains('on')));
+    await p.click('[data-demo="even"]'); await p.waitForTimeout(400);
+    assert.match(await p.textContent('#riverNote'), /^No rivers/);
+    assert.deepEqual(p.errors, []);
+  });
+}
+
+await t('rivers: no rain while practising, rain after scoring, none at a good setting', async () => {
+  const p = await page();
+  await practise(p); await go(p, 8);
+  assert.ok(!(await p.evaluate(() => document.querySelector('#paraCard .rivers').classList.contains('on'))));
+  await p.click('#checkBtn'); await p.waitForTimeout(600);
+  assert.ok(await p.evaluate(() => document.querySelector('#paraCard .rivers').classList.contains('on')));
+  await p.click('#resetBtn'); await p.fill('#slider', '0'); await p.click('#checkBtn'); await p.waitForTimeout(600);
+  assert.match(await p.textContent('#feedback'), /No rivers/);
+  await go(p, 9);
+  assert.ok(!(await p.evaluate(() => document.querySelector('#paraCard .rivers').classList.contains('on'))));
+});
+
+await t('rivers: reduced motion draws still channels instead of rain', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto(URL); await p.waitForTimeout(600);
+  await go(p, 8); await p.waitForTimeout(600);
+  const painted = await p.evaluate(() => { const c = document.querySelector('#riverDemo .rivers'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return n; });
+  assert.ok(painted > 50, 'nothing drawn');
+  assert.deepEqual(errs, []);
+});
+
 await t('layout: paragraphs never spill out of their card', async () => {
   for (const width of [1440, 768, 390, 360]) {
     const p = await page({ width });

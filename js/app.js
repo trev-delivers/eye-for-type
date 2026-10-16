@@ -2,6 +2,7 @@ import { lessons, typeLabel, leadingBand } from './lessons.js';
 import { kernPairs, kernScore, worstPair, pairReason, bandScore, cleanScores } from './scoring.js';
 import { createKern } from './kern.js';
 import { createPara, createRag, measureFont, fmtSpace, maxMeasure } from './text.js';
+import { createRivers } from './rivers.js';
 
 const $ = (id) => document.getElementById(id);
 const LAST = lessons.length - 1;
@@ -56,6 +57,22 @@ const rag = createRag(
   { onChange: (text) => { if (lessons[state.index].type === 'rag') work().text = text; } },
 );
 
+// Rain over the practise paragraph (after scoring) and the Learn demo.
+const rivers = createRivers($('paraSample'), $('paraCard'));
+const DEMO_TEXT = 'Rivers are channels of white space that run down through a paragraph when the gaps between words on neighbouring lines happen to line up. They are most common in justified text, where the spacing stretches to fill every line, and they pull the eye downwards when it should be moving along the line. Once you have seen one, it is very hard to stop seeing it, which is exactly why they are worth catching before anyone else does.';
+const demo = createRivers($('riverSample'), $('riverDemo'), {
+  onCount: (n) => { $('riverNote').textContent = n ? `${n} river${n === 1 ? '' : 's'}: gaps on three or more lines in a row line up, so the rain runs straight down through them.` : 'No rivers: the gaps don’t line up from one line to the next, so the rain lands on words and stops.'; },
+});
+function setDemo(mode) {
+  const el = $('riverSample');
+  el.style.wordSpacing = mode === 'wide' ? '0.32em' : '0em';
+  el.style.textAlign = mode === 'wide' ? 'justify' : 'left';
+  document.querySelectorAll('[data-demo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.demo === mode)));
+  requestAnimationFrame(() => demo.refresh());
+}
+$('riverSample').textContent = DEMO_TEXT;
+document.querySelectorAll('[data-demo]').forEach((b) => b.addEventListener('click', () => setDemo(b.dataset.demo)));
+
 // ---- static chrome ------------------------------------------------------
 $('lessonList').innerHTML = lessons.map((l, i) =>
   `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden" aria-label="scored"></span>${String(i + 1).padStart(2, '0')}</small></button></li>`).join('');
@@ -83,7 +100,7 @@ function chrome() {
 
 function render() {
   const i = state.index, l = lessons[i], practise = state.mode === 'test';
-  kern.stop();
+  kern.stop(); rivers.stop(); demo.stop();
   chrome();
 
   $('eyebrow').textContent = `Lesson ${String(i + 1).padStart(2, '0')} · ${typeLabel[l.type]}`;
@@ -150,6 +167,8 @@ const LEARN = {
 };
 function renderLearn(l) {
   show('readingWork', true);
+  show('riverDemo', l.type === 'wordspacing');
+  if (l.type === 'wordspacing') { setDemo('wide'); demo.start(); }
   $('readingLead').textContent = l.matters;
   $('readingExamples').innerHTML = (LEARN[l.type] || []).map(([h, p]) => `<div><h3>${h}</h3><p>${p}</p></div>`).join('');
 }
@@ -232,7 +251,11 @@ function showResult(r, fresh) {
       html += `<p>${inBand ? 'Comfortable.' : v < lo ? 'Too short: your eye keeps jumping back to the start.' : 'Too long: it’s easy to lose your place on the way back.'} You chose ${Math.round(v)} characters.</p>`;
       html += `<p class="why">Most comfortable reading sits around <b>${lo} to ${hi} characters</b> a line, roughly two to three alphabets.</p>`;
     } else {
+      rivers.refresh();
+      const n = rivers.count;
       html += `<p>${inBand ? 'Even texture.' : v > hi ? 'Too open: gaps are starting to line up into rivers.' : 'Too tight: words are starting to run together.'} You chose ${fmtSpace(v)}.</p>`;
+      html += `<p>${n ? `Your setting makes <b>${n} river${n === 1 ? '' : 's'}</b>. Watch the rain run down through ${n === 1 ? 'it' : 'them'}.` : v > hi ? 'No full rivers yet, but the gaps are wide enough that one could open with a different line break.' : 'No rivers: the rain lands on words instead of running down the page.'}</p>`;
+      html += `<div class="fb-actions"><button type="button" id="rainBtn" aria-pressed="true">Rain</button></div>`;
       html += `<p class="why">Anything from <b>${fmtSpace(lo)} to ${fmtSpace(hi)}</b> keeps an even grey. The typeface’s own spacing is usually close to right.</p>`;
     }
     showBand(r.band);
@@ -241,6 +264,11 @@ function showResult(r, fresh) {
   fb.innerHTML = html;
   show('feedback', true);
   if (l.type === 'kern') wireReveal(fb);
+  if (l.type === 'wordspacing') {
+    rivers.start();
+    const rb = fb.querySelector('#rainBtn');
+    rb.addEventListener('click', () => { if (rivers.running) rivers.stop(); else rivers.start(); rb.setAttribute('aria-pressed', String(rivers.running)); });
+  }
   if (fresh) {
     countUp(fb.querySelector('.score'), r.score);
     const b = fb.getBoundingClientRect();
