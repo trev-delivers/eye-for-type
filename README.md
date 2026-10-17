@@ -18,6 +18,8 @@ Colours, type and timing come from the Specimen theme in obvious, vendored into 
 
 ```sh
 python3 -m http.server 4180      # serve locally
-npm test                          # scoring unit tests
-node tests/e2e.mjs                # browser tests (needs Playwright; set PLAYWRIGHT to its index.mjs)
+npm ci                            # once, for the browser tests
+npm run check                     # every check: unit tests, ds/, audit, build, browser tests
 ```
+
+The audit needs a checkout of obvious next to this one, or `OBVIOUS=/path/to/obvious`.
