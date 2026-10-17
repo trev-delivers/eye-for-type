@@ -15,7 +15,7 @@ node scripts/sync-ds.mjs --check
 
 echo "== design system audit"
 if [ -f "$OBVIOUS/scripts/audit-ds.mjs" ]; then
-  node "$OBVIOUS/scripts/audit-ds.mjs" . --max 13
+  node "$OBVIOUS/scripts/audit-ds.mjs" . --max 11
 else
   echo "SKIP design system audit: no obvious checkout at $OBVIOUS (set OBVIOUS)"
 fi

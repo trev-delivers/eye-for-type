@@ -9,7 +9,8 @@ Playwright is a dev dependency for the tests and never ships.
 ## Checks
 
 `npm run check` runs everything, in this order: the scoring unit tests, a
-check that `ds/` matches obvious main, the design system audit, the build,
+check that `ds/` matches obvious main, the design system audit (budget 11,
+explained in `.ds-audit.json`), the build,
 then the browser tests against the built site. CI runs the same command on
 every pull request and every push to `main`.
 

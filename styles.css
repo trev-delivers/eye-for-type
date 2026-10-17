@@ -117,7 +117,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .rag-viz-wrap{border-left:1px solid var(--hair);padding-left:18px;min-height:150px}
 .rag-viz-title{color:var(--muted);margin-bottom:12px}
 .rag-viz{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
-.rag-bar{height:7px;border-radius:2px;background:var(--strong);transition:width var(--fast) var(--ease),background var(--fast) var(--ease)}
+.rag-bar{height:7px;border-radius:var(--ds-radius-xs);background:var(--strong);transition:width var(--fast) var(--ease),background var(--fast) var(--ease)}
 .rag-bar.problem{background:var(--accent)}
 .rag-coach{margin:28px 0 0;padding-top:16px;border-top:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.55;color:var(--muted)}
 
@@ -151,10 +151,10 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .guide-card h2{font-size:var(--ds-type-label-size);line-height:var(--ds-type-label-leading);font-weight:600;margin:0 0 6px}
 .guide-card p{font-size:var(--ds-text-xs);line-height:1.55;color:var(--muted);margin:0}
 .guide-card .aside-note{margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)}
-.tips{list-style:none;margin:0;padding:0;counter-reset:t}
-.tips li{counter-increment:t;display:flex;gap:9px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.45;color:var(--ink-dim)}
+.tips{list-style:none;margin:0;padding:0}
+.tips li{display:flex;gap:9px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.45;color:var(--ink-dim)}
 .tips li:last-child{border-bottom:0}
-.tips li::before{content:counter(t) ".";min-width:14px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.tips li::before{content:"\2022";min-width:14px;color:var(--muted);flex:none}
 .test-banner{padding:12px;border:1px dashed var(--strong);border-radius:var(--r);font-size:var(--ds-text-xs);line-height:1.5;color:var(--muted);margin-bottom:14px}
 
 .feedback{border-radius:var(--r-lg);padding:16px;background:var(--ink);color:var(--inverse);outline:none}
@@ -183,7 +183,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 @media(max-width:760px){
   header{padding:0 14px;gap:8px}
   .brand span,.progress-wrap{display:none}
-  .brand strong{font-size:17px}
+  .brand strong{font-size:var(--ds-text-base)}
   .mode button{padding:6px 10px}
   .lesson-picker-wrap{display:block}
   main{grid-template-columns:minmax(0,1fr)}

@@ -325,7 +325,7 @@ addEventListener('keyup', (e) => { if (e.key === 'Shift' && lessons[state.index]
 function countUp(el, to) {
   if (!el) return;
   if (reduceMotion()) { el.textContent = to; return; }
-  const t0 = performance.now(), dur = 700;
+  const t0 = performance.now(), dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ds-duration-slower')) || 700;
   const tick = (t) => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
