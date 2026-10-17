@@ -223,6 +223,29 @@ await t('final score count-up is hidden from screen readers, total read once', a
   assert.match(await p.textContent('#finalScoreText'), /70 out of 100/);
 });
 
+await t('a kerning word that fails to lay out shows an error and can be retried', async () => {
+  const ctx = await context({ viewport: { width: 1440, height: 900 } });
+  // Make the reference word report no characters, as it does when the
+  // browser hasn't laid it out, until the test lets it through.
+  await ctx.addInitScript(() => {
+    window.failKern = true;
+    const real = SVGTextContentElement.prototype.getNumberOfChars;
+    SVGTextContentElement.prototype.getNumberOfChars = function () { return window.failKern ? 0 : real.call(this); };
+  });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto(URL); await practise(p);
+  await p.waitForSelector('#kernError:not(.hidden)', { timeout: 5000 });
+  assert.match(await p.textContent('#kernError'), /couldn.t set this word/);
+  assert.ok(!(await p.isVisible('#checkBtn')), 'See my score is still showing');
+  assert.ok(!(await p.isVisible('#kernSvg')), 'the empty stage is still showing');
+  await p.evaluate(() => { window.failKern = false; });
+  await p.click('#kernRetry'); await kernReady(p, 4);
+  assert.ok(await p.isHidden('#kernError'));
+  await p.click('#checkBtn');
+  await p.waitForSelector('#feedback:not(.hidden)');
+  assert.deepEqual(errs, []);
+});
+
 await t('feature: perfect kerning scores 100, worst pair is explained', async () => {
   const p = await page();
   await practise(p); await kernReady(p, 4);

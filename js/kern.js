@@ -70,14 +70,18 @@ export function createKern(els, { onChange }) {
     for (let f = 0; f < 30 && g === gen && solution.getNumberOfChars() !== l.word.length; f++) {
       await new Promise(requestAnimationFrame);
     }
-    if (g !== gen || solution.getNumberOfChars() !== l.word.length) return false;
+    // null: a newer build took over, so say nothing. false: it failed.
+    if (g !== gen) return null;
+    if (solution.getNumberOfChars() !== l.word.length) return false;
 
-    starts = []; ends = [];
-    for (let i = 0; i < l.word.length; i++) {
-      starts.push(solution.getStartPositionOfChar(i).x);
-      ends.push(solution.getEndPositionOfChar(i).x);
-    }
-    box = solution.getBBox();
+    try {
+      starts = []; ends = [];
+      for (let i = 0; i < l.word.length; i++) {
+        starts.push(solution.getStartPositionOfChar(i).x);
+        ends.push(solution.getEndPositionOfChar(i).x);
+      }
+      box = solution.getBBox();
+    } catch (e) { starts = []; return false; }
     const pad = RANGE + 30;
     svg.setAttribute('viewBox', `${(box.x - pad).toFixed(1)} ${(box.y - 20).toFixed(1)} ${(box.width + pad * 2).toFixed(1)} ${(box.height + 70).toFixed(1)}`);
 

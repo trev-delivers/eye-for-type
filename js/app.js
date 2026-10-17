@@ -129,8 +129,10 @@ function render() {
     show('kernWork', true); show('rangeWrap', true); show('blurBtn', true); show('flipBtn', true);
     slider.min = -36; slider.max = 36; slider.step = 1; slider.value = 0; slider.disabled = true;
     $('controlLabel').textContent = 'Select a letter to adjust'; $('controlValue').textContent = '';
+    show('kernError', false); show('kernSvg', true); show('helper', true);
     kern.build(l, w.offsets).then((ok) => {
-      if (!ok || state.index !== i || state.mode !== 'test') return;
+      if (ok == null || state.index !== i || state.mode !== 'test') return;
+      if (!ok) return kernFailed();
       if (w.result) { kern.lock(); showResult(w.result, false); }
     });
   } else if (l.type === 'rag') {
@@ -152,6 +154,13 @@ function render() {
     setValueLabel(l, w.value);
     if (w.result) showResult(w.result, false);
   }
+}
+
+// The word couldn't be measured, so there's nothing to drag or score. Say
+// so and offer another go, instead of a blank stage and a dead button.
+function kernFailed() {
+  ['kernSvg', 'helper', 'rangeWrap', 'blurBtn', 'flipBtn', 'resetBtn', 'checkBtn'].forEach((id) => show(id, false));
+  show('kernError', true);
 }
 
 function setValueLabel(l, v) {
@@ -331,6 +340,7 @@ $('learnMode').addEventListener('click', () => setMode('learn'));
 $('testMode').addEventListener('click', () => setMode('test'));
 $('startPractise').addEventListener('click', () => { state.mode = 'test'; go(0); });
 $('checkBtn').addEventListener('click', grade);
+$('kernRetry').addEventListener('click', render);
 $('nextBtn').addEventListener('click', () => { go(state.index + 1); $('title').scrollIntoView({ block: 'nearest' }); });
 $('resetBtn').addEventListener('click', () => { delete state.work[state.index]; $('resetBtn').textContent = 'Reset'; render(); });
 $('blurBtn').addEventListener('click', () => $('blurBtn').setAttribute('aria-pressed', String(kern.toggleSquint())));

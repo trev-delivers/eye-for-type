@@ -82,6 +82,8 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .kern-svg.view-mine .solution-text{opacity:0}
 .kern-svg.view-expert #editableGlyphs{opacity:0}
 .kern-svg.view-expert .solution-text{opacity:1}
+.kern-error{text-align:center;padding:48px 0}
+.kern-error p{margin:0 0 16px;font-size:var(--ds-text-sm);color:var(--muted);line-height:1.5}
 .helper{margin:22px 0 0;font-size:var(--ds-text-xs);color:var(--muted);text-align:center;max-width:52ch;line-height:1.5}
 
 /* paragraphs */
