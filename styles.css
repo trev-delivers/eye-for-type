@@ -107,7 +107,9 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 /* rag */
 .rag-card{width:min(820px,100%)}
 .rag-layout{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:30px;align-items:start}
-.rag-editor{font-family:var(--serif);font-optical-sizing:auto;font-size:20px;line-height:1.48;min-height:150px;padding:12px;margin:-12px;border:1px solid transparent;border-radius:var(--r);outline:none;transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease);white-space:normal;overflow-wrap:normal;box-sizing:content-box}
+/* The editor is always laid out at 20px and scaled to fit (js/text.js), so it breaks the same everywhere */
+.rag-fit{margin:-12px}
+.rag-editor{font-family:var(--serif);font-optical-sizing:auto;font-size:20px;line-height:1.48;min-height:150px;padding:12px;transform-origin:0 0;border:1px solid transparent;border-radius:var(--r);outline:none;transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease);white-space:normal;overflow-wrap:normal;box-sizing:content-box}
 .rag-editor:hover{background:var(--hover)}
 .rag-editor:focus{border-color:var(--strong);background:var(--card)}
 .rag-meta{margin-top:26px;display:flex;gap:8px;flex-wrap:wrap;font-size:var(--ds-text-xs);color:var(--muted);font-variant-numeric:tabular-nums}

@@ -180,6 +180,39 @@ await t('12: the rag starts with a problem and breaks the same at every width', 
   assert.ok(!shapes[0].endsWith('Balanced rag'), shapes[0]);
 });
 
+await t('12c: the rag breaks the same at every width when the browser hints glyph widths', async () => {
+  // GitHub's runner hints glyphs, which rounds their widths to whole pixels
+  // at each size; text sized to the screen then broke differently per width.
+  // --font-render-hinting=full reproduces that here.
+  const hinted = await pw.chromium.launch({ args: ['--font-render-hinting=full'] });
+  try {
+    const shapes = [];
+    for (const width of [1440, 900, 390, 360]) {
+      const ctx = await hinted.newContext({ viewport: { width, height: 900 } });
+      await ctx.route('**/_vercel/insights/script.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+      const p = await ctx.newPage(); await p.goto(URL);
+      await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+      await practise(p); await go(p, 9); await p.waitForTimeout(300);
+      shapes.push(await p.evaluate(() => document.querySelectorAll('.rag-bar').length + ':' + document.getElementById('ragIssue').textContent + ':' + [...document.querySelectorAll('.rag-bar')].map((b) => Math.round(parseFloat(b.style.width) / 5)).join(',')));
+      await ctx.close();
+    }
+    assert.ok(shapes.every((s) => s === shapes[0]), shapes.join(' / '));
+  } finally { await hinted.close(); }
+});
+
+await t('12d: the rag editor fits its column at every width', async () => {
+  for (const width of [1440, 900, 390, 360, 320]) {
+    const p = await page({ width });
+    await practise(p); await go(p, 9); await p.waitForTimeout(300);
+    const o = await p.evaluate(() => {
+      const e = document.getElementById('ragEditor').getBoundingClientRect(), m = document.querySelector('.rag-main').getBoundingClientRect();
+      // the editor's padding hangs 12px into the card's padding on each side
+      return Math.max(m.left - 12 - e.left, e.right - (m.right + 12));
+    });
+    assert.ok(o <= 0.5, `${width}px: over by ${o.toFixed(1)}px`);
+  }
+});
+
 await t('12b: nonsense text is not a pass', async () => {
   const p = await page();
   await practise(p); await go(p, 9);

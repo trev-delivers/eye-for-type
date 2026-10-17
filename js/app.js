@@ -53,7 +53,7 @@ const kern = createKern(
 );
 const para = createPara({ card: $('paraCard'), title: $('paraTitle'), sample: $('paraSample'), noteA: $('paraNoteA'), noteB: $('paraNoteB') });
 const rag = createRag(
-  { editor: $('ragEditor'), viz: $('ragViz'), words: $('ragWords'), lines: $('ragLines'), issue: $('ragIssue'), coach: $('ragCoach') },
+  { editor: $('ragEditor'), fitBox: $('ragFit'), viz: $('ragViz'), words: $('ragWords'), lines: $('ragLines'), issue: $('ragIssue'), coach: $('ragCoach') },
   { onChange: (text) => { if (lessons[state.index].type === 'rag') work().text = text; } },
 );
 

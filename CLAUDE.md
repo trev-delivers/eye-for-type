@@ -48,7 +48,10 @@ CI goes red here until `ds/` is synced again. That's on purpose.
 - The type sizing in `js/text.js`. Text is sized so the measure in
   characters is the same on every screen, which is what makes a lesson
   behave the same on a phone and a laptop. Tests 11, 12 and the layout
-  tests guard it.
+  tests guard it. The rag editor is always laid out at 20px and scaled to
+  fit, because sizing its font to the screen broke lines differently at
+  each size on GitHub's runner, which rounds glyph widths (18 Oct 2026).
+  Test 12c reproduces that with `--font-render-hinting=full`.
 - Scoring in `js/scoring.js` is plain functions with unit tests. Keep the DOM
   out of it.
 
