@@ -28,6 +28,16 @@ async function page({ width = 1440, height = 900, touch = false, slowFont = fals
   if (slowFont) await p.route(/fonts\.gstatic\.com/, async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); r.continue(); });
   await p.goto(URL);
   await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+  // Measure with the real faces. On a cold CI runner Google Fonts can take
+  // longer than a test's short wait, and the fallback serif breaks lines
+  // differently. Tests that want a late font pass slowFont and wait for it.
+  if (!slowFont) {
+    await p.evaluate(() => Promise.all([
+      document.fonts.load('400 20px "Source Serif 4"'),
+      document.fonts.load('italic 400 20px "Source Serif 4"'),
+      document.fonts.load('400 16px "Source Sans 3"'),
+    ]).then(() => document.fonts.ready));
+  }
   return p;
 }
 const go = (p, i) => p.evaluate((i) => { const b = document.querySelector(`.lesson[data-i="${i}"]`); if (b && b.offsetParent) b.click(); else { const s = document.getElementById('lessonPicker'); s.value = i; s.dispatchEvent(new Event('change')); } }, i);
