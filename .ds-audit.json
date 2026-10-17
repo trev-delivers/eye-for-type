@@ -1,4 +1,4 @@
 {
   "ignore": [],
-  "note": "The one literal left is index.html's theme-color, #E8E9E5, which is --ds-color-bg copied by hand because a meta tag can't read a custom property. The rivers canvas in js/rivers.js reads --ds-color-accent-alt off the page when it paints and fades with globalAlpha, so it has no literals of its own."
+  "note": "11 literals left, all on purpose. index.html's theme-color, #E8E9E5, is --ds-color-bg copied by hand because a meta tag can't read a custom property. The rivers canvas in js/rivers.js reads --ds-color-accent-alt off the page when it paints and fades with globalAlpha, so it has no literals of its own. The 10 px font sizes in styles.css have no token at the same size: 156px (the kerning word), 20px and 19px (the paragraphs being judged, which js/text.js resizes to hold the measure) are the specimens themselves, and 80px and 32px (scores), 40px and 32px (h1), clamp(24px,3vw,40px) (the reading lead) and 20px (the name in the header) would change size if moved onto the nearest type role."
 }

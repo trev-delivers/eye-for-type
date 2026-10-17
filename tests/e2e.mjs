@@ -1,16 +1,26 @@
 // Browser tests. Each one re-runs a bug from the original's audit (numbered
-// as in that report) or checks a feature. Run with the site served on
-// localhost:4180:  python3 -m http.server 4180 &  then  node tests/e2e.mjs
-// PLAYWRIGHT can point at a Playwright install; defaults to the global one.
+// as in that report) or checks a feature. `npm run check` serves the site and
+// runs these; by hand: python3 -m http.server 4180 &  then  node tests/e2e.mjs
+// PLAYWRIGHT can point at a Playwright install; defaults to the dev
+// dependency, then the global one.
 import assert from 'node:assert/strict';
 
-const pw = await import(process.env.PLAYWRIGHT || '/opt/node22/lib/node_modules/playwright/index.mjs');
+const pw = process.env.PLAYWRIGHT ? await import(process.env.PLAYWRIGHT)
+  : await import('playwright').catch(() => import('/opt/node22/lib/node_modules/playwright/index.mjs'));
 const URL = process.env.URL || 'http://localhost:4180/';
 const browser = await pw.chromium.launch();
 let failed = 0;
 
+// Vercel serves the analytics script only on a deploy. Locally it 404s and
+// shows up as a console error, so hand every context an empty one.
+async function context(opts) {
+  const ctx = await browser.newContext(opts);
+  await ctx.route('**/_vercel/insights/script.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  return ctx;
+}
+
 async function page({ width = 1440, height = 900, touch = false, slowFont = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+  const ctx = await context({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
   const p = await ctx.newPage();
   p.errors = [];
   p.on('pageerror', (e) => p.errors.push(e.message));
@@ -18,6 +28,16 @@ async function page({ width = 1440, height = 900, touch = false, slowFont = fals
   if (slowFont) await p.route(/fonts\.gstatic\.com/, async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); r.continue(); });
   await p.goto(URL);
   await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+  // Measure with the real faces. On a cold CI runner Google Fonts can take
+  // longer than a test's short wait, and the fallback serif breaks lines
+  // differently. Tests that want a late font pass slowFont and wait for it.
+  if (!slowFont) {
+    await p.evaluate(() => Promise.all([
+      document.fonts.load('400 20px "Source Serif 4"'),
+      document.fonts.load('italic 400 20px "Source Serif 4"'),
+      document.fonts.load('400 16px "Source Sans 3"'),
+    ]).then(() => document.fonts.ready));
+  }
   return p;
 }
 const go = (p, i) => p.evaluate((i) => { const b = document.querySelector(`.lesson[data-i="${i}"]`); if (b && b.offsetParent) b.click(); else { const s = document.getElementById('lessonPicker'); s.value = i; s.dispatchEvent(new Event('change')); } }, i);
@@ -83,6 +103,26 @@ for (const width of [1440, 390]) {
   });
 }
 
+await t('a swipe on the kerning word scrolls the page on a phone, a letter still drags', async () => {
+  const p = await page({ width: 390, height: 700, touch: true });
+  await practise(p); await kernReady(p, 4);
+  const cdp = await p.context().newCDPSession(p);
+  const swipe = async (x0, y0, x1, y1) => {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y: y0 }] });
+    for (let k = 1; k <= 10; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + (x1 - x0) * k / 10, y: y0 + (y1 - y0) * k / 10 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await p.waitForTimeout(300);
+  };
+  const svg = await p.locator('#kernSvg').boundingBox();
+  await swipe(svg.x + 8, svg.y + svg.height / 2, svg.x + 8, svg.y + svg.height / 2 - 150);
+  assert.ok(await p.evaluate(() => scrollY) > 50, 'the page did not scroll');
+  await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(200);
+  const g = await p.locator('#editableGlyphs text[data-i="1"]').boundingBox();
+  await swipe(g.x + g.width / 2, g.y + g.height / 2, g.x + g.width / 2 - 20, g.y + g.height / 2 - 40);
+  assert.notEqual(await p.getAttribute('#editableGlyphs text[data-i="1"]', 'aria-valuenow'), '14');
+  assert.equal(await p.evaluate(() => scrollY), 0, 'dragging a letter scrolled the page');
+});
+
 await t('7: resizing keeps a scored kerning lesson intact', async () => {
   const p = await page();
   await practise(p); await kernReady(p, 4); await p.click('#checkBtn');
@@ -140,6 +180,39 @@ await t('12: the rag starts with a problem and breaks the same at every width', 
   assert.ok(!shapes[0].endsWith('Balanced rag'), shapes[0]);
 });
 
+await t('12c: the rag breaks the same at every width when the browser hints glyph widths', async () => {
+  // GitHub's runner hints glyphs, which rounds their widths to whole pixels
+  // at each size; text sized to the screen then broke differently per width.
+  // --font-render-hinting=full reproduces that here.
+  const hinted = await pw.chromium.launch({ args: ['--font-render-hinting=full'] });
+  try {
+    const shapes = [];
+    for (const width of [1440, 900, 390, 360]) {
+      const ctx = await hinted.newContext({ viewport: { width, height: 900 } });
+      await ctx.route('**/_vercel/insights/script.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+      const p = await ctx.newPage(); await p.goto(URL);
+      await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+      await practise(p); await go(p, 9); await p.waitForTimeout(300);
+      shapes.push(await p.evaluate(() => document.querySelectorAll('.rag-bar').length + ':' + document.getElementById('ragIssue').textContent + ':' + [...document.querySelectorAll('.rag-bar')].map((b) => Math.round(parseFloat(b.style.width) / 5)).join(',')));
+      await ctx.close();
+    }
+    assert.ok(shapes.every((s) => s === shapes[0]), shapes.join(' / '));
+  } finally { await hinted.close(); }
+});
+
+await t('12d: the rag editor fits its column at every width', async () => {
+  for (const width of [1440, 900, 390, 360, 320]) {
+    const p = await page({ width });
+    await practise(p); await go(p, 9); await p.waitForTimeout(300);
+    const o = await p.evaluate(() => {
+      const e = document.getElementById('ragEditor').getBoundingClientRect(), m = document.querySelector('.rag-main').getBoundingClientRect();
+      // the editor's padding hangs 12px into the card's padding on each side
+      return Math.max(m.left - 12 - e.left, e.right - (m.right + 12));
+    });
+    assert.ok(o <= 0.5, `${width}px: over by ${o.toFixed(1)}px`);
+  }
+});
+
 await t('12b: nonsense text is not a pass', async () => {
   const p = await page();
   await practise(p); await go(p, 9);
@@ -184,6 +257,56 @@ await t('21: slider has a name, modes and lessons expose state', async () => {
   assert.match(await p.evaluate(() => document.getElementById('slider').labels[0].textContent), /Line height/);
   assert.equal(await p.getAttribute('#testMode', 'aria-pressed'), 'true');
   assert.equal(await p.getAttribute('.lesson[data-i="6"]', 'aria-current'), 'true');
+});
+
+await t('score count-up stays out of the live region, final score announced once', async () => {
+  const p = await page();
+  await practise(p); await go(p, 6); await p.fill('#slider', '1.35');
+  // Record every change inside the feedback live region that a screen reader
+  // could hear, from the moment the result first appears.
+  await p.evaluate(() => {
+    const fb = document.getElementById('feedback');
+    window.heard = [];
+    new MutationObserver((ms) => ms.forEach((m) => {
+      const el = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+      if (el !== fb && !el.closest('[aria-hidden="true"]')) window.heard.push(el.className || el.tagName);
+    })).observe(fb, { childList: true, characterData: true, subtree: true });
+  });
+  await p.click('#checkBtn'); await p.waitForTimeout(900);
+  assert.equal(await p.textContent('#feedback .score'), '100');
+  assert.deepEqual(await p.evaluate(() => window.heard), []);
+  assert.match(await p.textContent('#feedback .sr-only'), /100 out of 100/);
+});
+
+await t('final score count-up is hidden from screen readers, total read once', async () => {
+  const p = await page();
+  await p.evaluate(() => localStorage.setItem('eye-for-type:v2', JSON.stringify({ index: 11, mode: 'learn', scores: { 0: 80, 1: 60 } })));
+  await p.reload(); await p.waitForTimeout(900);
+  assert.equal(await p.getAttribute('#finalScore', 'aria-hidden'), 'true');
+  assert.match(await p.textContent('#finalScoreText'), /70 out of 100/);
+});
+
+await t('a kerning word that fails to lay out shows an error and can be retried', async () => {
+  const ctx = await context({ viewport: { width: 1440, height: 900 } });
+  // Make the reference word report no characters, as it does when the
+  // browser hasn't laid it out, until the test lets it through.
+  await ctx.addInitScript(() => {
+    window.failKern = true;
+    const real = SVGTextContentElement.prototype.getNumberOfChars;
+    SVGTextContentElement.prototype.getNumberOfChars = function () { return window.failKern ? 0 : real.call(this); };
+  });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto(URL); await practise(p);
+  await p.waitForSelector('#kernError:not(.hidden)', { timeout: 5000 });
+  assert.match(await p.textContent('#kernError'), /couldn.t set this word/);
+  assert.ok(!(await p.isVisible('#checkBtn')), 'See my score is still showing');
+  assert.ok(!(await p.isVisible('#kernSvg')), 'the empty stage is still showing');
+  await p.evaluate(() => { window.failKern = false; });
+  await p.click('#kernRetry'); await kernReady(p, 4);
+  assert.ok(await p.isHidden('#kernError'));
+  await p.click('#checkBtn');
+  await p.waitForSelector('#feedback:not(.hidden)');
+  assert.deepEqual(errs, []);
 });
 
 await t('feature: perfect kerning scores 100, worst pair is explained', async () => {
@@ -244,12 +367,57 @@ await t('rivers: no rain while practising, rain after scoring, none at a good se
 });
 
 await t('rivers: reduced motion draws still channels instead of rain', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const ctx = await context({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(URL); await p.waitForTimeout(600);
   await go(p, 8); await p.waitForTimeout(600);
   const painted = await p.evaluate(() => { const c = document.querySelector('#riverDemo .rivers'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i]) n++; return n; });
   assert.ok(painted > 50, 'nothing drawn');
+  assert.deepEqual(errs, []);
+});
+
+await t('controls are at least 44px tall on a phone', async () => {
+  const p = await page({ width: 390, height: 844, touch: true });
+  const short = async () => p.evaluate(() => [...document.querySelectorAll('.mode button, .seg button, .view-switch button, .fb-actions button, .btn, .lesson-picker')]
+    .filter((e) => e.offsetParent).map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter(([, h]) => h < 44));
+  await go(p, 8); await p.waitForTimeout(300);
+  assert.deepEqual(await short(), []);
+  await practise(p); await go(p, 0); await kernReady(p, 4);
+  assert.deepEqual(await short(), []);
+  await p.click('#checkBtn'); await p.waitForTimeout(300);
+  assert.deepEqual(await short(), []);
+});
+
+await t('a scored lesson says so to screen readers in the lesson list', async () => {
+  const p = await page();
+  await p.evaluate(() => localStorage.setItem('eye-for-type:v2', JSON.stringify({ index: 0, mode: 'learn', scores: { 0: 80 } })));
+  await p.reload(); await p.waitForTimeout(500);
+  assert.equal(await p.locator('.lesson[data-i="0"] [aria-label]').count(), 0);
+  assert.match(await p.evaluate(() => document.querySelector('.lesson[data-i="0"]').innerText + '|' + document.querySelector('.lesson[data-i="0"] .done .sr-only').textContent), /scored/);
+});
+
+await t('the page works under the security headers in vercel.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const conf = JSON.parse(readFileSync(new globalThis.URL('../vercel.json', import.meta.url), 'utf8'));
+  const headers = Object.fromEntries((conf.headers || []).find((h) => h.source === '/(.*)')?.headers.map((h) => [h.key.toLowerCase(), h.value]) || []);
+  const csp = headers['content-security-policy'];
+  assert.ok(csp, 'no Content-Security-Policy in vercel.json');
+  for (const d of ["frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'self'"]) assert.ok(csp.includes(d), d);
+  for (const k of ['x-content-type-options', 'referrer-policy', 'strict-transport-security', 'permissions-policy']) assert.ok(headers[k], k);
+  // Python's server sends no headers, so add them to the page the way Vercel would.
+  const ctx = await context({ viewport: { width: 1440, height: 900 } });
+  await ctx.route((u) => u.origin === new globalThis.URL(URL).origin && (u.pathname === '/' || u.pathname.endsWith('.html')), async (r) => {
+    const res = await r.fetch();
+    await r.fulfill({ response: res, headers: { ...res.headers(), 'content-security-policy': csp } });
+  });
+  await ctx.addInitScript(() => { window.blocked = []; document.addEventListener('securitypolicyviolation', (e) => window.blocked.push(e.violatedDirective + ' ' + e.blockedURI)); });
+  const p = await ctx.newPage(); const errs = [];
+  p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+  await p.goto(URL); await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+  for (const m of ['#learnMode', '#testMode']) { await p.click(m); for (let i = 0; i < 12; i++) { await go(p, i); await p.waitForTimeout(150); } }
+  await go(p, 0); await kernReady(p, 4); await p.click('#checkBtn'); await p.waitForTimeout(800);
+  assert.ok(await p.evaluate(() => document.fonts.check('40px "Source Serif 4"')), 'the web font did not load');
+  assert.deepEqual(await p.evaluate(() => window.blocked), []);
   assert.deepEqual(errs, []);
 });
 

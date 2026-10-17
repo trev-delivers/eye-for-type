@@ -80,3 +80,14 @@ test('stored scores are validated', () => {
   assert.deepEqual(cleanScores({ 0: 'abc', 1: -500, 2: 140, 3: 55.6, 99: 10, foo: 1, 11: 50 }, 12), { 1: 0, 2: 100, 3: 56 });
   assert.deepEqual(cleanScores(null, 12), {});
 });
+
+// Copy rules from write-like-trev that a machine can check. Lesson samples
+// are the paragraphs being judged, so they're left out.
+test('copy: no "X, not Y" lines, "rather than" or em dashes', async () => {
+  const { readFileSync } = await import('node:fs');
+  const files = ['index.html', 'js/app.js', 'js/text.js', 'README.md'].map((f) => [f, readFileSync(new URL('../' + f, import.meta.url), 'utf8')]);
+  const lessonCopy = lessons.flatMap((l) => [l.title, l.desc, l.matters, l.why, ...(l.tips || [])]).filter(Boolean).join('\n');
+  for (const [name, text] of [...files, ['js/lessons.js', lessonCopy]]) {
+    for (const bad of [/, not /, /\brather than\b/, /—/]) assert.doesNotMatch(text, bad, name);
+  }
+});

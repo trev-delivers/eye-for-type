@@ -53,7 +53,7 @@ const kern = createKern(
 );
 const para = createPara({ card: $('paraCard'), title: $('paraTitle'), sample: $('paraSample'), noteA: $('paraNoteA'), noteB: $('paraNoteB') });
 const rag = createRag(
-  { editor: $('ragEditor'), viz: $('ragViz'), words: $('ragWords'), lines: $('ragLines'), issue: $('ragIssue'), coach: $('ragCoach') },
+  { editor: $('ragEditor'), fitBox: $('ragFit'), viz: $('ragViz'), words: $('ragWords'), lines: $('ragLines'), issue: $('ragIssue'), coach: $('ragCoach') },
   { onChange: (text) => { if (lessons[state.index].type === 'rag') work().text = text; } },
 );
 
@@ -75,7 +75,7 @@ document.querySelectorAll('[data-demo]').forEach((b) => b.addEventListener('clic
 
 // ---- static chrome ------------------------------------------------------
 $('lessonList').innerHTML = lessons.map((l, i) =>
-  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden" aria-label="scored"></span>${i + 1}</small></button></li>`).join('');
+  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden"><span class="sr-only">scored, </span></span>${i + 1}</small></button></li>`).join('');
 $('lessonPicker').innerHTML = lessons.map((l, i) => `<option value="${i}">${i + 1}. ${l.title}</option>`).join('');
 
 // ---- render -------------------------------------------------------------
@@ -129,8 +129,10 @@ function render() {
     show('kernWork', true); show('rangeWrap', true); show('blurBtn', true); show('flipBtn', true);
     slider.min = -36; slider.max = 36; slider.step = 1; slider.value = 0; slider.disabled = true;
     $('controlLabel').textContent = 'Select a letter to adjust'; $('controlValue').textContent = '';
+    show('kernError', false); show('kernSvg', true); show('helper', true);
     kern.build(l, w.offsets).then((ok) => {
-      if (!ok || state.index !== i || state.mode !== 'test') return;
+      if (ok == null || state.index !== i || state.mode !== 'test') return;
+      if (!ok) return kernFailed();
       if (w.result) { kern.lock(); showResult(w.result, false); }
     });
   } else if (l.type === 'rag') {
@@ -154,16 +156,23 @@ function render() {
   }
 }
 
+// The word couldn't be measured, so there's nothing to drag or score. Say
+// so and offer another go, instead of a blank stage and a dead button.
+function kernFailed() {
+  ['kernSvg', 'helper', 'rangeWrap', 'blurBtn', 'flipBtn', 'resetBtn', 'checkBtn'].forEach((id) => show(id, false));
+  show('kernError', true);
+}
+
 function setValueLabel(l, v) {
   $('controlValue').textContent = l.type === 'leading' ? v.toFixed(2) : l.type === 'wordspacing' ? fmtSpace(v) : Math.round(v) + ' characters';
 }
 
 const LEARN = {
   kern: [['What to see', 'Treat the gaps as shapes. Practise starts by knocking a few letters out of place; a perfect score means restoring the typeface’s own spacing.'], ['What to do', 'Compare one gap at a time, then step back to the whole word. When you see your score, you can flick between your spacing and the answer.']],
-  leading: [['What to see', 'The horizontal bands of white between lines, and the overall grey of the paragraph.'], ['What to do', 'Judge how easily you find the next line and whether it still reads as one block. You’re aiming for a comfortable range, not one number.']],
+  leading: [['What to see', 'The horizontal bands of white between lines, and the overall grey of the paragraph.'], ['What to do', 'Judge how easily you find the next line and whether it still reads as one block. Anywhere in the comfortable range scores full marks.']],
   measure: [['What to see', 'How far your eye travels along a line, and how hard it is to find the start of the next.'], ['What to do', 'Widen or narrow the paragraph until reading feels effortless. Most people settle somewhere around 50 to 75 characters.']],
   wordspacing: [['What to see', 'Rivers: vertical channels of white that start linking up between lines.'], ['What to do', 'Keep words distinct without each one floating on its own.']],
-  rag: [['What to see', 'The silhouette of the line endings. A good rag moves in small, varied steps rather than big jumps.'], ['What to do', 'In Practise, edit the words themselves. A small rewrite usually beats forcing line breaks.']],
+  rag: [['What to see', 'The silhouette of the line endings. A good rag moves in small, varied steps.'], ['What to do', 'In Practise, edit the words themselves. A small rewrite usually beats forcing line breaks.']],
 };
 function renderLearn(l) {
   show('readingWork', true);
@@ -178,6 +187,7 @@ function renderFinal() {
   const scored = Object.entries(state.scores);
   const avg = scored.length ? Math.round(scored.reduce((a, [, v]) => a + v, 0) / scored.length) : null;
   $('finalScore').textContent = avg == null ? '–' : '0';
+  $('finalScoreText').textContent = avg == null ? 'No score yet.' : `Your eye score: ${avg} out of 100.`;
   if (avg != null) countUp($('finalScore'), avg);
   $('finalCopy').textContent =
     avg == null ? 'Practise at least one lesson and your eye score will appear here.' :
@@ -224,7 +234,9 @@ function showResult(r, fresh) {
   show('checkBtn', false);
   show('nextBtn', state.index < LAST);
   $('resetBtn').textContent = 'Try again';
-  let html = `<span class="score">${fresh ? 0 : r.score}</span>`;
+  // The visible number counts up, so it's hidden from screen readers; the
+  // live region gets the final score once, as text.
+  let html = `<span class="score" aria-hidden="true">${fresh ? 0 : r.score}</span><span class="sr-only">Your score: ${r.score} out of 100.</span>`;
 
   if (l.type === 'kern') {
     show('rangeWrap', false);
@@ -313,7 +325,7 @@ addEventListener('keyup', (e) => { if (e.key === 'Shift' && lessons[state.index]
 function countUp(el, to) {
   if (!el) return;
   if (reduceMotion()) { el.textContent = to; return; }
-  const t0 = performance.now(), dur = 700;
+  const t0 = performance.now(), dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ds-duration-slower')) || 700;
   const tick = (t) => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
@@ -328,6 +340,7 @@ $('learnMode').addEventListener('click', () => setMode('learn'));
 $('testMode').addEventListener('click', () => setMode('test'));
 $('startPractise').addEventListener('click', () => { state.mode = 'test'; go(0); });
 $('checkBtn').addEventListener('click', grade);
+$('kernRetry').addEventListener('click', render);
 $('nextBtn').addEventListener('click', () => { go(state.index + 1); $('title').scrollIntoView({ block: 'nearest' }); });
 $('resetBtn').addEventListener('click', () => { delete state.work[state.index]; $('resetBtn').textContent = 'Reset'; render(); });
 $('blurBtn').addEventListener('click', () => $('blurBtn').setAttribute('aria-pressed', String(kern.toggleSquint())));

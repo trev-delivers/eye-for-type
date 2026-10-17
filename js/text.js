@@ -1,9 +1,11 @@
 // Paragraph exercises: leading, measure and word spacing (one slider each),
 // and the rag editor. Type is sized so the measure in ch is honest at any
-// screen width: on a narrow screen the text gets smaller rather than the
-// line getting shorter, so the lesson means the same thing everywhere.
+// screen width: on a narrow screen the text gets smaller and the line keeps
+// its length in characters, so the lesson means the same thing everywhere.
 
 import { ragAnalysis, keptRatio } from './scoring.js';
+
+const BREAKS = 'Line breaks fall apart on other screen sizes, so change the words instead.';
 
 let chRatio = 0.5;
 export async function measureFont() {
@@ -72,8 +74,8 @@ export const fmtSpace = (v) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2) +
 
 // ---- rag editor ---------------------------------------------------------
 export function createRag(els, { onChange }) {
-  const { editor, viz, words, lines, issue, coach } = els;
-  let lesson = null, last = null;
+  const { editor, fitBox, viz, words, lines, issue, coach } = els;
+  let lesson = null, last = null, scale = 1;
 
   // Only plain text edits. Line breaks and formatting are blocked: the
   // lesson is about editing words, and forced breaks fall apart on other
@@ -82,11 +84,11 @@ export function createRag(els, { onChange }) {
     const t = e.inputType || '';
     if (t === 'insertParagraph' || t === 'insertLineBreak' || t.startsWith('format') || t === 'insertFromDrop') {
       e.preventDefault();
-      if (t === 'insertParagraph' || t === 'insertLineBreak') say('Edit the words rather than adding line breaks. Forced breaks fall apart on other screen sizes.');
+      if (t === 'insertParagraph' || t === 'insertLineBreak') say(BREAKS);
     }
   });
   editor.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); say('Edit the words rather than adding line breaks. Forced breaks fall apart on other screen sizes.'); }
+    if (e.key === 'Enter') { e.preventDefault(); say(BREAKS); }
   });
   editor.addEventListener('paste', (e) => {
     e.preventDefault();
@@ -118,28 +120,40 @@ export function createRag(els, { onChange }) {
     }
   }
 
+  // The paragraph is always laid out at 20px and the measure in ch, then
+  // scaled down to fit. Sizing the font to the screen instead broke lines
+  // differently at each size wherever the browser rounds glyph widths to
+  // whole pixels (GitHub's test runner does, 18 Oct 2026).
+  const column = fitBox.parentElement;
   function fit() {
     if (!lesson) return;
-    // leave room for the editor's own padding and border (12px each side, plus 1px)
-    const avail = editor.parentElement.clientWidth - 26;
-    editor.style.fontSize = fitSize(avail, lesson.measure, 20) + 'px';
     editor.style.width = lesson.measure + 'ch';
+    // the editor's padding hangs 12px into the card's padding on each side
+    const avail = column.clientWidth + 24;
+    scale = Math.min(1, avail / editor.offsetWidth);
+    editor.style.transform = scale < 1 ? `scale(${scale})` : '';
+    size();
     analyse();
   }
-  // Re-fit whenever the space around the paragraph changes, so the measure
-  // (and so the line breaks) is the same at every screen size.
+  // The transform doesn't change layout, so the box around the editor takes
+  // the scaled size, including as the text grows or shrinks while editing.
+  function size() {
+    fitBox.style.width = editor.offsetWidth * scale + 'px';
+    fitBox.style.height = editor.offsetHeight * scale + 'px';
+  }
   let lastW = 0;
   new ResizeObserver(() => {
-    const w = editor.parentElement.clientWidth;
+    const w = column.clientWidth;
     if (w && Math.abs(w - lastW) > 0.5) { lastW = w; fit(); }
-  }).observe(editor.parentElement);
+  }).observe(column);
+  new ResizeObserver(size).observe(editor);
 
   // Rendered lines, read character by character across every text node.
   function renderedLines() {
     const r = editor.getBoundingClientRect();
     const cs = getComputedStyle(editor);
-    const left = r.left + parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth);
-    const width = parseFloat(cs.width);
+    const left = r.left + (parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth)) * scale;
+    const width = parseFloat(cs.width) * scale;
     const out = [];
     const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
     const range = document.createRange();

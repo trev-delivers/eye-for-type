@@ -65,11 +65,11 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 
 /* kerning */
 .kern{display:flex;flex-direction:column;align-items:center}
-.kern-svg{width:min(860px,100%);height:auto;max-height:300px;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none}
+.kern-svg{width:min(860px,100%);height:auto;max-height:300px;overflow:visible;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .solution-text,.editable-glyph{font-family:var(--serif);font-optical-sizing:auto;font-size:156px;font-kerning:normal;font-feature-settings:"kern" 1}
 .solution-text{fill:var(--blue);opacity:0;transition:opacity var(--base) var(--ease)}
 .editable-glyph{fill:var(--ink);transition:opacity var(--fast) var(--ease),fill var(--fast) var(--ease)}
-.editable-glyph.movable{cursor:ew-resize}
+.editable-glyph.movable{cursor:ew-resize;touch-action:none}
 .editable-glyph:focus{outline:none}
 #editableGlyphs.dim .editable-glyph:not(.active){opacity:.2}
 .marker{fill:none;stroke:var(--muted);stroke-width:2}
@@ -78,10 +78,12 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .kern-svg.squint #editableGlyphs{filter:url(#squint)}
 .kern-svg.scored .solution-text{opacity:.72}
 .kern-svg.scored .editable-glyph{fill:color-mix(in srgb,var(--ink) 42%,transparent)}
-.kern-svg.scored .editable-glyph.movable{cursor:default}
+.kern-svg.scored .editable-glyph.movable{cursor:default;touch-action:pan-y}
 .kern-svg.view-mine .solution-text{opacity:0}
 .kern-svg.view-expert #editableGlyphs{opacity:0}
 .kern-svg.view-expert .solution-text{opacity:1}
+.kern-error{text-align:center;padding:48px 0}
+.kern-error p{margin:0 0 16px;font-size:var(--ds-text-sm);color:var(--muted);line-height:1.5}
 .helper{margin:22px 0 0;font-size:var(--ds-text-xs);color:var(--muted);text-align:center;max-width:52ch;line-height:1.5}
 
 /* paragraphs */
@@ -105,7 +107,9 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 /* rag */
 .rag-card{width:min(820px,100%)}
 .rag-layout{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:30px;align-items:start}
-.rag-editor{font-family:var(--serif);font-optical-sizing:auto;font-size:20px;line-height:1.48;min-height:150px;padding:12px;margin:-12px;border:1px solid transparent;border-radius:var(--r);outline:none;transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease);white-space:normal;overflow-wrap:normal;box-sizing:content-box}
+/* The editor is always laid out at 20px and scaled to fit (js/text.js), so it breaks the same everywhere */
+.rag-fit{margin:-12px}
+.rag-editor{font-family:var(--serif);font-optical-sizing:auto;font-size:20px;line-height:1.48;min-height:150px;padding:12px;transform-origin:0 0;border:1px solid transparent;border-radius:var(--r);outline:none;transition:border-color var(--fast) var(--ease),background var(--fast) var(--ease);white-space:normal;overflow-wrap:normal;box-sizing:content-box}
 .rag-editor:hover{background:var(--hover)}
 .rag-editor:focus{border-color:var(--strong);background:var(--card)}
 .rag-meta{margin-top:26px;display:flex;gap:8px;flex-wrap:wrap;font-size:var(--ds-text-xs);color:var(--muted);font-variant-numeric:tabular-nums}
@@ -115,7 +119,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .rag-viz-wrap{border-left:1px solid var(--hair);padding-left:18px;min-height:150px}
 .rag-viz-title{color:var(--muted);margin-bottom:12px}
 .rag-viz{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
-.rag-bar{height:7px;border-radius:2px;background:var(--strong);transition:width var(--fast) var(--ease),background var(--fast) var(--ease)}
+.rag-bar{height:7px;border-radius:var(--ds-radius-xs);background:var(--strong);transition:width var(--fast) var(--ease),background var(--fast) var(--ease)}
 .rag-bar.problem{background:var(--accent)}
 .rag-coach{margin:28px 0 0;padding-top:16px;border-top:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.55;color:var(--muted)}
 
@@ -149,10 +153,10 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .guide-card h2{font-size:var(--ds-type-label-size);line-height:var(--ds-type-label-leading);font-weight:600;margin:0 0 6px}
 .guide-card p{font-size:var(--ds-text-xs);line-height:1.55;color:var(--muted);margin:0}
 .guide-card .aside-note{margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)}
-.tips{list-style:none;margin:0;padding:0;counter-reset:t}
-.tips li{counter-increment:t;display:flex;gap:9px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.45;color:var(--ink-dim)}
+.tips{list-style:none;margin:0;padding:0}
+.tips li{display:flex;gap:9px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hair);font-size:var(--ds-text-xs);line-height:1.45;color:var(--ink-dim)}
 .tips li:last-child{border-bottom:0}
-.tips li::before{content:counter(t) ".";min-width:14px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.tips li::before{content:"\2022";min-width:14px;color:var(--muted);flex:none}
 .test-banner{padding:12px;border:1px dashed var(--strong);border-radius:var(--r);font-size:var(--ds-text-xs);line-height:1.5;color:var(--muted);margin-bottom:14px}
 
 .feedback{border-radius:var(--r-lg);padding:16px;background:var(--ink);color:var(--inverse);outline:none}
@@ -181,7 +185,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 @media(max-width:760px){
   header{padding:0 14px;gap:8px}
   .brand span,.progress-wrap{display:none}
-  .brand strong{font-size:17px}
+  .brand strong{font-size:var(--ds-text-base)}
   .mode button{padding:6px 10px}
   .lesson-picker-wrap{display:block}
   main{grid-template-columns:minmax(0,1fr)}
@@ -198,4 +202,8 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
   .reading-examples{grid-template-columns:1fr}
   .rag-layout{grid-template-columns:minmax(0,1fr)}
   .rag-viz-wrap{border-left:0;border-top:1px solid var(--hair);padding:16px 0 0;min-height:0}
+}
+/* Phones and tablets: every control at least 44px tall so it's easy to hit */
+@media(pointer:coarse){
+  .mode button,.seg button,.view-switch button,.fb-actions button,.btn,.lesson-picker{min-height:var(--ds-control-tap-min)}
 }
