@@ -196,6 +196,33 @@ await t('21: slider has a name, modes and lessons expose state', async () => {
   assert.equal(await p.getAttribute('.lesson[data-i="6"]', 'aria-current'), 'true');
 });
 
+await t('score count-up stays out of the live region, final score announced once', async () => {
+  const p = await page();
+  await practise(p); await go(p, 6); await p.fill('#slider', '1.35');
+  // Record every change inside the feedback live region that a screen reader
+  // could hear, from the moment the result first appears.
+  await p.evaluate(() => {
+    const fb = document.getElementById('feedback');
+    window.heard = [];
+    new MutationObserver((ms) => ms.forEach((m) => {
+      const el = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+      if (el !== fb && !el.closest('[aria-hidden="true"]')) window.heard.push(el.className || el.tagName);
+    })).observe(fb, { childList: true, characterData: true, subtree: true });
+  });
+  await p.click('#checkBtn'); await p.waitForTimeout(900);
+  assert.equal(await p.textContent('#feedback .score'), '100');
+  assert.deepEqual(await p.evaluate(() => window.heard), []);
+  assert.match(await p.textContent('#feedback .sr-only'), /100 out of 100/);
+});
+
+await t('final score count-up is hidden from screen readers, total read once', async () => {
+  const p = await page();
+  await p.evaluate(() => localStorage.setItem('eye-for-type:v2', JSON.stringify({ index: 11, mode: 'learn', scores: { 0: 80, 1: 60 } })));
+  await p.reload(); await p.waitForTimeout(900);
+  assert.equal(await p.getAttribute('#finalScore', 'aria-hidden'), 'true');
+  assert.match(await p.textContent('#finalScoreText'), /70 out of 100/);
+});
+
 await t('feature: perfect kerning scores 100, worst pair is explained', async () => {
   const p = await page();
   await practise(p); await kernReady(p, 4);

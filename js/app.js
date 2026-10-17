@@ -178,6 +178,7 @@ function renderFinal() {
   const scored = Object.entries(state.scores);
   const avg = scored.length ? Math.round(scored.reduce((a, [, v]) => a + v, 0) / scored.length) : null;
   $('finalScore').textContent = avg == null ? '–' : '0';
+  $('finalScoreText').textContent = avg == null ? 'No score yet.' : `Your eye score: ${avg} out of 100.`;
   if (avg != null) countUp($('finalScore'), avg);
   $('finalCopy').textContent =
     avg == null ? 'Practise at least one lesson and your eye score will appear here.' :
@@ -224,7 +225,9 @@ function showResult(r, fresh) {
   show('checkBtn', false);
   show('nextBtn', state.index < LAST);
   $('resetBtn').textContent = 'Try again';
-  let html = `<span class="score">${fresh ? 0 : r.score}</span>`;
+  // The visible number counts up, so it's hidden from screen readers; the
+  // live region gets the final score once, as text.
+  let html = `<span class="score" aria-hidden="true">${fresh ? 0 : r.score}</span><span class="sr-only">Your score: ${r.score} out of 100.</span>`;
 
   if (l.type === 'kern') {
     show('rangeWrap', false);
