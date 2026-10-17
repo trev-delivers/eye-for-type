@@ -26,7 +26,9 @@ scroll at 5 widths. A new bug gets a test there that fails without the fix.
 ## How it ships
 
 Pull request to `main`. Vercel runs `scripts/build.sh`, which copies the site
-into `out/` and points the analytics script at the project's own path.
+into `out/`, points the analytics script at the project's own path and puts
+the commit sha in `<meta name="build">`, so view source on the live site
+shows which commit is live.
 Security headers, including the Content Security Policy, are in
 `vercel.json`. The page only loads its own files plus Google Fonts, and the
 analytics script is served from this site too. Anything new from another
@@ -53,4 +55,5 @@ CI goes red here until `ds/` is synced again. That's on purpose.
 ## Writing
 
 Copy on the site, the README and commit messages follow the write-like-trev
-skill in obvious. Plain, UK spelling, no em dashes, and no "X, not Y" lines.
+skill in obvious: plain, UK spelling, no em dashes, and none of the
+correction-style lines it bans.
