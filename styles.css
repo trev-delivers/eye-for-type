@@ -65,11 +65,11 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 
 /* kerning */
 .kern{display:flex;flex-direction:column;align-items:center}
-.kern-svg{width:min(860px,100%);height:auto;max-height:300px;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none}
+.kern-svg{width:min(860px,100%);height:auto;max-height:300px;overflow:visible;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .solution-text,.editable-glyph{font-family:var(--serif);font-optical-sizing:auto;font-size:156px;font-kerning:normal;font-feature-settings:"kern" 1}
 .solution-text{fill:var(--blue);opacity:0;transition:opacity var(--base) var(--ease)}
 .editable-glyph{fill:var(--ink);transition:opacity var(--fast) var(--ease),fill var(--fast) var(--ease)}
-.editable-glyph.movable{cursor:ew-resize}
+.editable-glyph.movable{cursor:ew-resize;touch-action:none}
 .editable-glyph:focus{outline:none}
 #editableGlyphs.dim .editable-glyph:not(.active){opacity:.2}
 .marker{fill:none;stroke:var(--muted);stroke-width:2}
@@ -78,7 +78,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 .kern-svg.squint #editableGlyphs{filter:url(#squint)}
 .kern-svg.scored .solution-text{opacity:.72}
 .kern-svg.scored .editable-glyph{fill:color-mix(in srgb,var(--ink) 42%,transparent)}
-.kern-svg.scored .editable-glyph.movable{cursor:default}
+.kern-svg.scored .editable-glyph.movable{cursor:default;touch-action:pan-y}
 .kern-svg.view-mine .solution-text{opacity:0}
 .kern-svg.view-expert #editableGlyphs{opacity:0}
 .kern-svg.view-expert .solution-text{opacity:1}

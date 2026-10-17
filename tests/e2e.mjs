@@ -93,6 +93,26 @@ for (const width of [1440, 390]) {
   });
 }
 
+await t('a swipe on the kerning word scrolls the page on a phone, a letter still drags', async () => {
+  const p = await page({ width: 390, height: 700, touch: true });
+  await practise(p); await kernReady(p, 4);
+  const cdp = await p.context().newCDPSession(p);
+  const swipe = async (x0, y0, x1, y1) => {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y: y0 }] });
+    for (let k = 1; k <= 10; k++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0 + (x1 - x0) * k / 10, y: y0 + (y1 - y0) * k / 10 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await p.waitForTimeout(300);
+  };
+  const svg = await p.locator('#kernSvg').boundingBox();
+  await swipe(svg.x + 8, svg.y + svg.height / 2, svg.x + 8, svg.y + svg.height / 2 - 150);
+  assert.ok(await p.evaluate(() => scrollY) > 50, 'the page did not scroll');
+  await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(200);
+  const g = await p.locator('#editableGlyphs text[data-i="1"]').boundingBox();
+  await swipe(g.x + g.width / 2, g.y + g.height / 2, g.x + g.width / 2 - 20, g.y + g.height / 2 - 40);
+  assert.notEqual(await p.getAttribute('#editableGlyphs text[data-i="1"]', 'aria-valuenow'), '14');
+  assert.equal(await p.evaluate(() => scrollY), 0, 'dragging a letter scrolled the page');
+});
+
 await t('7: resizing keeps a scored kerning lesson intact', async () => {
   const p = await page();
   await practise(p); await kernReady(p, 4); await p.click('#checkBtn');
