@@ -27,6 +27,11 @@ scroll at 5 widths. A new bug gets a test there that fails without the fix.
 
 Pull request to `main`. Vercel runs `scripts/build.sh`, which copies the site
 into `out/` and points the analytics script at the project's own path.
+Security headers, including the Content Security Policy, are in
+`vercel.json`. The page only loads its own files plus Google Fonts, and the
+analytics script is served from this site too. Anything new from another
+site has to be added to the policy or the browser blocks it. A browser test
+loads every lesson under the policy and fails on anything blocked.
 
 Colours, type and timing come from the Specimen theme in obvious, copied into
 `ds/`. Refresh it with `node scripts/sync-ds.mjs`. When obvious main moves,

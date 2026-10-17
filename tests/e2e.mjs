@@ -353,6 +353,31 @@ await t('a scored lesson says so to screen readers in the lesson list', async ()
   assert.match(await p.evaluate(() => document.querySelector('.lesson[data-i="0"]').innerText + '|' + document.querySelector('.lesson[data-i="0"] .done .sr-only').textContent), /scored/);
 });
 
+await t('the page works under the security headers in vercel.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const conf = JSON.parse(readFileSync(new globalThis.URL('../vercel.json', import.meta.url), 'utf8'));
+  const headers = Object.fromEntries((conf.headers || []).find((h) => h.source === '/(.*)')?.headers.map((h) => [h.key.toLowerCase(), h.value]) || []);
+  const csp = headers['content-security-policy'];
+  assert.ok(csp, 'no Content-Security-Policy in vercel.json');
+  for (const d of ["frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'self'"]) assert.ok(csp.includes(d), d);
+  for (const k of ['x-content-type-options', 'referrer-policy', 'strict-transport-security', 'permissions-policy']) assert.ok(headers[k], k);
+  // Python's server sends no headers, so add them to the page the way Vercel would.
+  const ctx = await context({ viewport: { width: 1440, height: 900 } });
+  await ctx.route((u) => u.origin === new globalThis.URL(URL).origin && (u.pathname === '/' || u.pathname.endsWith('.html')), async (r) => {
+    const res = await r.fetch();
+    await r.fulfill({ response: res, headers: { ...res.headers(), 'content-security-policy': csp } });
+  });
+  await ctx.addInitScript(() => { window.blocked = []; document.addEventListener('securitypolicyviolation', (e) => window.blocked.push(e.violatedDirective + ' ' + e.blockedURI)); });
+  const p = await ctx.newPage(); const errs = [];
+  p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+  await p.goto(URL); await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
+  for (const m of ['#learnMode', '#testMode']) { await p.click(m); for (let i = 0; i < 12; i++) { await go(p, i); await p.waitForTimeout(150); } }
+  await go(p, 0); await kernReady(p, 4); await p.click('#checkBtn'); await p.waitForTimeout(800);
+  assert.ok(await p.evaluate(() => document.fonts.check('40px "Source Serif 4"')), 'the web font did not load');
+  assert.deepEqual(await p.evaluate(() => window.blocked), []);
+  assert.deepEqual(errs, []);
+});
+
 await t('layout: paragraphs never spill out of their card', async () => {
   for (const width of [1440, 768, 390, 360]) {
     const p = await page({ width });
