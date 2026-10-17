@@ -1,16 +1,26 @@
 // Browser tests. Each one re-runs a bug from the original's audit (numbered
-// as in that report) or checks a feature. Run with the site served on
-// localhost:4180:  python3 -m http.server 4180 &  then  node tests/e2e.mjs
-// PLAYWRIGHT can point at a Playwright install; defaults to the global one.
+// as in that report) or checks a feature. `npm run check` serves the site and
+// runs these; by hand: python3 -m http.server 4180 &  then  node tests/e2e.mjs
+// PLAYWRIGHT can point at a Playwright install; defaults to the dev
+// dependency, then the global one.
 import assert from 'node:assert/strict';
 
-const pw = await import(process.env.PLAYWRIGHT || '/opt/node22/lib/node_modules/playwright/index.mjs');
+const pw = process.env.PLAYWRIGHT ? await import(process.env.PLAYWRIGHT)
+  : await import('playwright').catch(() => import('/opt/node22/lib/node_modules/playwright/index.mjs'));
 const URL = process.env.URL || 'http://localhost:4180/';
 const browser = await pw.chromium.launch();
 let failed = 0;
 
+// Vercel serves the analytics script only on a deploy. Locally it 404s and
+// shows up as a console error, so hand every context an empty one.
+async function context(opts) {
+  const ctx = await browser.newContext(opts);
+  await ctx.route('**/_vercel/insights/script.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  return ctx;
+}
+
 async function page({ width = 1440, height = 900, touch = false, slowFont = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
+  const ctx = await context({ viewport: { width, height }, hasTouch: touch, isMobile: touch });
   const p = await ctx.newPage();
   p.errors = [];
   p.on('pageerror', (e) => p.errors.push(e.message));
@@ -244,7 +254,7 @@ await t('rivers: no rain while practising, rain after scoring, none at a good se
 });
 
 await t('rivers: reduced motion draws still channels instead of rain', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const ctx = await context({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(URL); await p.waitForTimeout(600);
   await go(p, 8); await p.waitForTimeout(600);
