@@ -1,9 +1,11 @@
 // Paragraph exercises: leading, measure and word spacing (one slider each),
 // and the rag editor. Type is sized so the measure in ch is honest at any
-// screen width: on a narrow screen the text gets smaller rather than the
-// line getting shorter, so the lesson means the same thing everywhere.
+// screen width: on a narrow screen the text gets smaller and the line keeps
+// its length in characters, so the lesson means the same thing everywhere.
 
 import { ragAnalysis, keptRatio } from './scoring.js';
+
+const BREAKS = 'Line breaks fall apart on other screen sizes, so change the words instead.';
 
 let chRatio = 0.5;
 export async function measureFont() {
@@ -82,11 +84,11 @@ export function createRag(els, { onChange }) {
     const t = e.inputType || '';
     if (t === 'insertParagraph' || t === 'insertLineBreak' || t.startsWith('format') || t === 'insertFromDrop') {
       e.preventDefault();
-      if (t === 'insertParagraph' || t === 'insertLineBreak') say('Edit the words rather than adding line breaks. Forced breaks fall apart on other screen sizes.');
+      if (t === 'insertParagraph' || t === 'insertLineBreak') say(BREAKS);
     }
   });
   editor.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); say('Edit the words rather than adding line breaks. Forced breaks fall apart on other screen sizes.'); }
+    if (e.key === 'Enter') { e.preventDefault(); say(BREAKS); }
   });
   editor.addEventListener('paste', (e) => {
     e.preventDefault();

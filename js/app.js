@@ -169,10 +169,10 @@ function setValueLabel(l, v) {
 
 const LEARN = {
   kern: [['What to see', 'Treat the gaps as shapes. Practise starts by knocking a few letters out of place; a perfect score means restoring the typeface’s own spacing.'], ['What to do', 'Compare one gap at a time, then step back to the whole word. When you see your score, you can flick between your spacing and the answer.']],
-  leading: [['What to see', 'The horizontal bands of white between lines, and the overall grey of the paragraph.'], ['What to do', 'Judge how easily you find the next line and whether it still reads as one block. You’re aiming for a comfortable range, not one number.']],
+  leading: [['What to see', 'The horizontal bands of white between lines, and the overall grey of the paragraph.'], ['What to do', 'Judge how easily you find the next line and whether it still reads as one block. Anywhere in the comfortable range scores full marks.']],
   measure: [['What to see', 'How far your eye travels along a line, and how hard it is to find the start of the next.'], ['What to do', 'Widen or narrow the paragraph until reading feels effortless. Most people settle somewhere around 50 to 75 characters.']],
   wordspacing: [['What to see', 'Rivers: vertical channels of white that start linking up between lines.'], ['What to do', 'Keep words distinct without each one floating on its own.']],
-  rag: [['What to see', 'The silhouette of the line endings. A good rag moves in small, varied steps rather than big jumps.'], ['What to do', 'In Practise, edit the words themselves. A small rewrite usually beats forcing line breaks.']],
+  rag: [['What to see', 'The silhouette of the line endings. A good rag moves in small, varied steps.'], ['What to do', 'In Practise, edit the words themselves. A small rewrite usually beats forcing line breaks.']],
 };
 function renderLearn(l) {
   show('readingWork', true);

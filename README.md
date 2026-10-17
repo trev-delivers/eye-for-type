@@ -4,7 +4,7 @@ Learn to see typography: hands-on lessons in kerning, leading, measure, word spa
 
 ## How scoring works
 
-- **Kerning** is scored against the typeface's own kerning (Source Serif 4's OpenType kerning, set by its designers). It scores the gaps between letters, which is what the eye sees, not each letter's position. After scoring you can flick between yours and the answer, slide your letters to the answer, and get a one-line reason for your worst pair.
+- **Kerning** is scored against the typeface's own kerning (Source Serif 4's OpenType kerning, set by its designers). It scores the gaps between letters, because that's what the eye sees. After scoring you can flick between yours and the answer, slide your letters to the answer, and get a one-line reason for your worst pair.
 - **Leading, measure and word spacing** have no single right answer, so each is scored against a comfortable range, shown on the slider afterwards. Leading's range grows with the line length.
 - **Rag** is scored on the shape of the right edge (runts, jagged jumps, notches, slopes), so any good rag passes. Rewriting the paragraph into something else doesn't count.
 

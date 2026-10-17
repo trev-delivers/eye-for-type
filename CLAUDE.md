@@ -8,11 +8,11 @@ Playwright is a dev dependency for the tests and never ships.
 
 ## Checks
 
-`npm run check` runs everything, in this order: the scoring unit tests, a
-check that `ds/` matches obvious main, the design system audit (budget 11,
-explained in `.ds-audit.json`), the build,
-then the browser tests against the built site. CI runs the same command on
-every pull request and every push to `main`.
+`npm run check` runs everything, in this order: the unit tests, a check
+that `ds/` matches obvious main, the design system audit (budget 11,
+explained in `.ds-audit.json`), the build, then the browser tests against
+the built site. CI runs the same command on every pull request and every
+push to `main`. The unit tests include the copy rules a machine can check.
 
 Locally it needs `npm ci` once, Python 3 for the server, and a checkout of
 obvious next to this one (or `OBVIOUS=/path/to/obvious`). Without obvious the
