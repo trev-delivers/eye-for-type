@@ -75,7 +75,7 @@ document.querySelectorAll('[data-demo]').forEach((b) => b.addEventListener('clic
 
 // ---- static chrome ------------------------------------------------------
 $('lessonList').innerHTML = lessons.map((l, i) =>
-  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden" aria-label="scored"></span>${i + 1}</small></button></li>`).join('');
+  `<li><button class="lesson" type="button" data-i="${i}"><span>${l.title}</span><small><span class="done hidden"><span class="sr-only">scored, </span></span>${i + 1}</small></button></li>`).join('');
 $('lessonPicker').innerHTML = lessons.map((l, i) => `<option value="${i}">${i + 1}. ${l.title}</option>`).join('');
 
 // ---- render -------------------------------------------------------------

@@ -333,6 +333,26 @@ await t('rivers: reduced motion draws still channels instead of rain', async () 
   assert.deepEqual(errs, []);
 });
 
+await t('controls are at least 44px tall on a phone', async () => {
+  const p = await page({ width: 390, height: 844, touch: true });
+  const short = async () => p.evaluate(() => [...document.querySelectorAll('.mode button, .seg button, .view-switch button, .fb-actions button, .btn, .lesson-picker')]
+    .filter((e) => e.offsetParent).map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter(([, h]) => h < 44));
+  await go(p, 8); await p.waitForTimeout(300);
+  assert.deepEqual(await short(), []);
+  await practise(p); await go(p, 0); await kernReady(p, 4);
+  assert.deepEqual(await short(), []);
+  await p.click('#checkBtn'); await p.waitForTimeout(300);
+  assert.deepEqual(await short(), []);
+});
+
+await t('a scored lesson says so to screen readers in the lesson list', async () => {
+  const p = await page();
+  await p.evaluate(() => localStorage.setItem('eye-for-type:v2', JSON.stringify({ index: 0, mode: 'learn', scores: { 0: 80 } })));
+  await p.reload(); await p.waitForTimeout(500);
+  assert.equal(await p.locator('.lesson[data-i="0"] [aria-label]').count(), 0);
+  assert.match(await p.evaluate(() => document.querySelector('.lesson[data-i="0"]').innerText + '|' + document.querySelector('.lesson[data-i="0"] .done .sr-only').textContent), /scored/);
+});
+
 await t('layout: paragraphs never spill out of their card', async () => {
   for (const width of [1440, 768, 390, 360]) {
     const p = await page({ width });

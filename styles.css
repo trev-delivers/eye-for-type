@@ -201,3 +201,7 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
   .rag-layout{grid-template-columns:minmax(0,1fr)}
   .rag-viz-wrap{border-left:0;border-top:1px solid var(--hair);padding:16px 0 0;min-height:0}
 }
+/* Phones and tablets: every control at least 44px tall so it's easy to hit */
+@media(pointer:coarse){
+  .mode button,.seg button,.view-switch button,.fb-actions button,.btn,.lesson-picker{min-height:var(--ds-control-tap-min)}
+}
