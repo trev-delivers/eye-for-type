@@ -32,6 +32,47 @@ his behalf.
    add a test that would catch you breaking it, and say so in the report.
 4. Run the repo's checks before you start so you know what was already
    broken. Don't take the blame for old failures, and don't hide them.
+5. Check the repo is still connected to obvious:
+   `node <obvious>/.claude/skills/engineer/scripts/connected.mjs <repo>`.
+   Anything it fails is part of this job, not a follow-up. See "Connected to
+   obvious" below.
+
+## Connected to obvious
+
+Every app is part of one system. obvious holds the one copy of the tokens,
+components, behaviours, shared scripts and shared skills, and apps take
+them from it. A copy that lives in one app on its own never gets fixes,
+and that's how things rot. So, every time you work in a repo:
+
+- **ds/ and the skills are current.** Run `node scripts/sync-ds.mjs` and
+  `node scripts/sync-skills.mjs`, commit the result, and say so in the
+  report. If the app is pinned to an older obvious on purpose, leave the
+  pin and say why it's there.
+- **The shared scripts are obvious's.** `scripts/audit-ds.mjs`,
+  `sync-ds.mjs` and `sync-skills.mjs` match obvious byte for byte. Never
+  edit an app's copy; change obvious and copy it over.
+- **The checks keep it that way.** `npm run check` runs `ds:check`
+  (`sync-ds.mjs --check`), `skills:check` (`sync-skills.mjs --check`) and
+  `ds:audit` with a `--max` budget. Add whichever is missing. CI is manual
+  in every repo (see `references/standards/shipping.md`), so run
+  `npm run check` locally before anything merges.
+- **No private copies.** If the app has its own version of something
+  obvious ships (a token, a component, a behaviour like `cssMs`,
+  `splitWords` or `cycleLoadingText`), use obvious's: import it from
+  `ds/js/behaviours.js` or use the `ob-*` class. If the app's version is
+  better, move the better one into obvious first, then use it from there.
+  Something genuinely app-specific stays in the app, named with the app's
+  own prefix.
+- **Our own code.** Nothing copied from transitions.dev, CodePen, a blog or
+  another kit. Write it on the tokens. Libraries installed from npm under a
+  normal licence are fine; list the runtime ones in the report when they
+  change.
+- **New things go into obvious.** If you build something another app could
+  use, build it in obvious and sync it in, rather than in the app.
+
+`connected.mjs` finds most of this. It reads the code, so it can miss a copy
+that was renamed; when you see something that looks like obvious's, check.
+
 
 ## Building
 
@@ -52,7 +93,8 @@ Route to the specialist skills; don't redo their work:
 - Words on screen, READMEs, commits, PRs: `write-like-trev`. Portfolio copy:
   `write-portfolio` too. Patterns for errors, empty states, labels and alt
   text: `ux-writing`.
-- Adding motion: `transitions-dev`. Tuning motion: `transitions-polish`.
+- Motion: obvious's components and registry first. New motion is written
+  by hand on the tokens. Never copy transitions.dev.
 - Design system tokens and rules: `design-system-guardian`, which runs
   obvious's audit (`node scripts/audit-ds.mjs <app>` from the obvious repo).
 - Building from a Figma frame: `figma-to-code`.
