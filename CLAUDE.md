@@ -11,12 +11,15 @@ Playwright is a dev dependency for the tests and never ships.
 `npm run check` runs everything, in this order: the unit tests, a check
 that `ds/` matches obvious main, the design system audit (budget 11,
 explained in `.ds-audit.json`), the build, then the browser tests against
-the built site. CI runs the same command on every pull request and every
-push to `main`. The unit tests include the copy rules a machine can check.
+the built site. CI runs the same command, but only when started by hand
+from the repo's Actions tab ("Run workflow"), to save Actions minutes. So
+`npm run check` run locally is what has to pass before merging. The unit
+tests include the copy rules a machine can check.
 
 Locally it needs `npm ci` once, Python 3 for the server, and a checkout of
 obvious next to this one (or `OBVIOUS=/path/to/obvious`). Without obvious the
-audit prints `SKIP` and the rest still runs; CI fails on any `SKIP`.
+audit prints `SKIP` and the rest still runs; CI fails on any `SKIP`, so
+don't merge on a local run that printed one.
 `PORT=4181 npm run check` if 4180 is taken.
 
 The browser tests in `tests/e2e.mjs` each replay a bug that was found and
@@ -37,7 +40,8 @@ loads every lesson under the policy and fails on anything blocked.
 
 Colours, type and timing come from the Specimen theme in obvious, copied into
 `ds/`. Refresh it with `node scripts/sync-ds.mjs`. When obvious main moves,
-CI goes red here until `ds/` is synced again. That's on purpose.
+`npm run check` (and CI, when it's run) fails here until `ds/` is synced
+again. That's on purpose.
 
 ## Be careful with
 
