@@ -20,7 +20,7 @@ button{cursor:pointer}
 /* label role: sentence case, text face, no tracking */
 .label{font-size:var(--ds-type-label-size);line-height:var(--ds-type-label-leading);font-weight:var(--ds-type-label-weight);letter-spacing:var(--ds-type-label-tracking)}
 
-.app{min-height:100vh;display:grid;grid-template-rows:auto 1fr;grid-template-columns:minmax(0,1fr)}
+.app{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:minmax(0,1fr)}
 header{position:sticky;top:0;z-index:var(--ds-z-nav);height:66px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .brand{display:flex;align-items:baseline;gap:12px;min-width:0}
 .brand strong{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:var(--ds-tracking-tight);white-space:nowrap}
@@ -207,3 +207,6 @@ h1{font-family:var(--serif);font-size:40px;line-height:1.05;letter-spacing:var(-
 @media(pointer:coarse){
   .mode button,.seg button,.view-switch button,.fb-actions button,.btn,.lesson-picker{min-height:var(--ds-control-tap-min)}
 }
+
+.privacy{padding:16px 20px;border-top:1px solid var(--line);font-size:var(--ds-text-xs);line-height:1.55;color:var(--muted)}
+.privacy p{margin:0;max-width:70ch}

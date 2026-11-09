@@ -25,10 +25,10 @@ async function page({ width = 1440, height = 900, touch = false, slowFont = fals
   p.errors = [];
   p.on('pageerror', (e) => p.errors.push(e.message));
   p.on('console', (m) => m.type() === 'error' && p.errors.push(m.text()));
-  if (slowFont) await p.route(/fonts\.gstatic\.com/, async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); r.continue(); });
+  if (slowFont) await p.route(/\/fonts\/.*\.woff2/, async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); r.continue(); });
   await p.goto(URL);
   await p.waitForFunction(() => document.getElementById('title').textContent.length > 0);
-  // Measure with the real faces. On a cold CI runner Google Fonts can take
+  // Measure with the real faces. On a cold CI runner the fonts can take
   // longer than a test's short wait, and the fallback serif breaks lines
   // differently. Tests that want a late font pass slowFont and wait for it.
   if (!slowFont) {
